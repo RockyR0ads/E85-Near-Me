@@ -1,9 +1,11 @@
 package com.example.rocky.finde85now_001;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -16,18 +18,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.net.MalformedURLException;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.net.URL;
 import java.util.ArrayList;
+
+import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -43,6 +51,10 @@ public class MainActivity extends AppCompatActivity {
     Button click;
     public static TextView data;
 
+    private LocationRequest mLocationRequest;
+    private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
+    private long FASTEST_INTERVAL = 2000; /* 2 sec */
+
     float[] straightLineDistanceInMeters = new float[1];
 
     //Arrays to hold station lists
@@ -52,8 +64,7 @@ public class MainActivity extends AppCompatActivity {
     Location phone = new Location("phone");
     Location locationA = new Location("DeeWhy");
     Location m = new Location("test");
-    LocationRequest mLocationRequest;
-    LatLng currentLocation = new LatLng(0,0); // testing latlng object
+    LatLng currentLocation = new LatLng(0, 0); // testing latlng object
 
 
     private double homeLat = 0.0;
@@ -124,28 +135,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        // Construct a FusedLocationProviderClient.
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-
-        // TEST PERMISSION IS GRANTED
-        String checkifPermissionIsGranted;
-        if (mLocationPermissionGranted) {
-
-            checkifPermissionIsGranted = "locationAllowed";
-        } else {
-            checkifPermissionIsGranted = "locationdenied";
-        }
-
-
-        //TextView textView = findViewById(R.id.result);
-
-        //textView.setText("lastKnownLocation = " + userLocationLongitute + " " + userLocationLatitude);
-
-
         // SEND THE STATION TO GOOGLE MAPS TO LAUNCH DIRECTIONS TO IT
-
 
 //        String format = "google.navigation:q=" + lat + "," + lng + "&mode=d"; // setup the string to pass
 //
@@ -158,23 +148,114 @@ public class MainActivity extends AppCompatActivity {
 
 //        android.os.Process.killProcess(android.os.Process.myPid()); // kill the process running this activity
 
-        getLocationPermission();
-        getDeviceLocation1();
+        startLocationUpdates();
+       // getLocationPermission();
+        getLastLocation();
+        //getDeviceLocation();
+        //getDistanceBetween();
 
-
-       // getDistanceBetween();
-
-
-
-
-        for (double d : possibleDest){
+        for (double d : possibleDest) {
             String numberAsString = Double.toString(d);
             Log.d("DESTINATIONS", numberAsString); // testing the straight line distances in meters for all stations in syd
         }
     }
 
-    // THIS is a version of getting current location that didnt update correctly
+    protected void startLocationUpdates() {
 
+        // Create the location request to start receiving updates
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+
+        // Create LocationSettingsRequest object using location request
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        // Check whether location settings are satisfied
+        // https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
+        SettingsClient settingsClient = LocationServices.getSettingsClient(this);
+        settingsClient.checkLocationSettings(locationSettingsRequest);
+
+        // Check for PERMISSION
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+
+            return;
+        }
+        // new Google API SDK v11 uses getFusedLocationProviderClient(this)
+        getFusedLocationProviderClient(this).requestLocationUpdates(mLocationRequest, new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        // do work here
+                        onLocationChanged(locationResult.getLastLocation());
+                    }
+                },
+                Looper.myLooper());
+    }
+
+    public void getLastLocation() {
+
+        // initialise an FLPC object
+        FusedLocationProviderClient locationClient = getFusedLocationProviderClient(this);
+
+            // Check if permission is not granted
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+
+
+            return;
+        }
+
+        // Get last known recent location using new Google Play Services SDK (v11+)
+        locationClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // GPS location can be null if GPS is switched off
+                        if (location != null) {
+                            onLocationChanged(location);
+                            userLocationLongitude = location.getLongitude();
+                            userLocationLatitude = location.getLatitude();
+
+                            data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
+
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("MapDemoActivity", "Error trying to get last GPS location");
+                        e.printStackTrace();
+                    }
+                });
+
+    }
+
+
+    // THIS is a version of getting current location that didnt update correctly
     private void getDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
@@ -205,9 +286,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
- // THIS DOES NOT WORK FIND A WAY TO MAKE THIS WORK
+    // THIS DOES NOT WORK FIND A WAY TO MAKE THIS WORK
     private void getDeviceLocation1() {
 
         try {
@@ -253,39 +332,39 @@ public class MainActivity extends AppCompatActivity {
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        homeLng = location.getLongitude();
+        homeLat = location.getLatitude();
         // You can now create a LatLng Object for use with maps
-
         currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        data.setText("Longitute: " + homeLng + "\nLatitude: " + homeLat);
     }
 
 
 
 
-    private void getLocationPermission() {
-        /*
-         * Request location permission, so that we can get the location of the
-         * device. The result of the permission request is handled by a callback,
-         * onRequestPermissionsResult.
-         *
-         */
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-
-            mLocationPermissionGranted = true;
-
-           // mLastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-
-        } else {
-
-            // No explanation needed; request the permission
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
-
-
-    }
+//    private void getLocationPermission() {
+//        /*
+//         * Request location permission, so that we can get the location of the
+//         * device. The result of the permission request is handled by a callback,
+//         * onRequestPermissionsResult.
+//         *
+//         */
+//        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+//                android.Manifest.permission.ACCESS_FINE_LOCATION)
+//                == PackageManager.PERMISSION_GRANTED) {
+//
+//            mLocationPermissionGranted = true;
+//
+//        } else {
+//
+//            // No explanation needed; request the permission
+//            ActivityCompat.requestPermissions(this,
+//                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+//                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+//        }
+//
+//
+//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -295,6 +374,7 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
+
                     // permission was granted, yay! Do the things
                  } else {
                     // permission denied, boo! Disable the
