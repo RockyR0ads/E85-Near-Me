@@ -1,9 +1,11 @@
 package com.example.rocky.finde85now_001;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -16,18 +18,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.net.MalformedURLException;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.net.URL;
 import java.util.ArrayList;
+
+import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -43,6 +51,10 @@ public class MainActivity extends AppCompatActivity {
     Button click;
     public static TextView data;
 
+    private LocationRequest mLocationRequest;
+    private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
+    private long FASTEST_INTERVAL = 2000; /* 2 sec */
+
     float[] straightLineDistanceInMeters = new float[1];
 
     //Arrays to hold station lists
@@ -53,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     Location locationA = new Location("DeeWhy");
     Location m = new Location("test");
     LocationRequest mLocationRequest;
-    LatLng currentLocation = new LatLng(0,0); // testing latlng object
+    LatLng currentLocation = new LatLng(0, 0); // testing latlng object
 
 
     private double homeLat = 0.0;
@@ -126,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Construct a FusedLocationProviderClient.
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        //mFusedLocationProviderClient = getFusedLocationProviderClient(this);
 
 
         // TEST PERMISSION IS GRANTED
@@ -158,23 +170,95 @@ public class MainActivity extends AppCompatActivity {
 
 //        android.os.Process.killProcess(android.os.Process.myPid()); // kill the process running this activity
 
+        startLocationUpdates();
         getLocationPermission();
-        getDeviceLocation1();
+        getLastLocation();
+        //getDeviceLocation();
+        // getDistanceBetween();
 
-
-       // getDistanceBetween();
-
-
-
-
-        for (double d : possibleDest){
+        for (double d : possibleDest) {
             String numberAsString = Double.toString(d);
             Log.d("DESTINATIONS", numberAsString); // testing the straight line distances in meters for all stations in syd
         }
     }
 
-    // THIS is a version of getting current location that didnt update correctly
+    protected void startLocationUpdates() {
 
+        // Create the location request to start receiving updates
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+
+        // Create LocationSettingsRequest object using location request
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        // Check whether location settings are satisfied
+        // https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
+        SettingsClient settingsClient = LocationServices.getSettingsClient(this);
+        settingsClient.checkLocationSettings(locationSettingsRequest);
+
+        // Check for PERMISSION
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        // new Google API SDK v11 uses getFusedLocationProviderClient(this)
+        getFusedLocationProviderClient(this).requestLocationUpdates(mLocationRequest, new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        // do work here
+                        onLocationChanged(locationResult.getLastLocation());
+                    }
+                },
+                Looper.myLooper());
+    }
+
+    public void getLastLocation() {
+        
+        FusedLocationProviderClient locationClient = getFusedLocationProviderClient(this);
+            // CHECK FOR PERMISSION
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        // Get last known recent location using new Google Play Services SDK (v11+)
+        locationClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // GPS location can be null if GPS is switched off
+                        if (location != null) {
+                            onLocationChanged(location);
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("MapDemoActivity", "Error trying to get last GPS location");
+                        e.printStackTrace();
+                    }
+                });
+
+    }
+
+
+    // THIS is a version of getting current location that didnt update correctly
     private void getDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
@@ -208,44 +292,44 @@ public class MainActivity extends AppCompatActivity {
 
 
  // THIS DOES NOT WORK FIND A WAY TO MAKE THIS WORK
-    private void getDeviceLocation1() {
-
-        try {
-            if (mLocationPermissionGranted) {
-                mFusedLocationProviderClient.getLastLocation()
-                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                            @Override
-                            public void onSuccess(Location location) {
-                                // Got last known location. In some rare situations this can be null.
-                                if (location != null) {
-                                    // Logic to handle location object
-
-
-
-                                    userLocationLongitude = location.getLongitude();
-                                    userLocationLatitude = location.getLatitude();
-
-                                    homeLat = userLocationLatitude;
-                                    homeLng = userLocationLongitude;
-
-                                    data.setText("Longitute: " + location.getLongitude() + "\nLatitude: " + homeLng);
-
-
-
-
-                                    onLocationChanged(location);
-
-                                }
-                                else{data.setText("location is null");}
-                            }
-
-                        });
-
-            }
-        } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
-        }
-    }
+//    private void getDeviceLocation1() {
+//
+//        try {
+//            if (mLocationPermissionGranted) {
+//                mFusedLocationProviderClient.getLastLocation()
+//                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                            @Override
+//                            public void onSuccess(Location location) {
+//                                // Got last known location. In some rare situations this can be null.
+//                                if (location != null) {
+//                                    // Logic to handle location object
+//
+//
+//
+//                                    userLocationLongitude = location.getLongitude();
+//                                    userLocationLatitude = location.getLatitude();
+//
+//                                    homeLat = userLocationLatitude;
+//                                    homeLng = userLocationLongitude;
+//
+//                                    data.setText("Longitute: " + location.getLongitude() + "\nLatitude: " + homeLng);
+//
+//
+//
+//
+//                                    onLocationChanged(location);
+//
+//                                }
+//                                else{data.setText("location is null");}
+//                            }
+//
+//                        });
+//
+//            }
+//        } catch (SecurityException e)  {
+//            Log.e("Exception: %s", e.getMessage());
+//        }
+//    }
 
     public void onLocationChanged(Location location) {
         // New location has now been determined
@@ -254,8 +338,8 @@ public class MainActivity extends AppCompatActivity {
                 Double.toString(location.getLongitude());
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         // You can now create a LatLng Object for use with maps
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-        currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
     }
 
 
@@ -273,8 +357,6 @@ public class MainActivity extends AppCompatActivity {
                 == PackageManager.PERMISSION_GRANTED) {
 
             mLocationPermissionGranted = true;
-
-           // mLastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
 
         } else {
 
@@ -295,6 +377,7 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
+
                     // permission was granted, yay! Do the things
                  } else {
                     // permission denied, boo! Disable the
