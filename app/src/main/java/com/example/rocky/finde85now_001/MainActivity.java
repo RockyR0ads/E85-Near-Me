@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
     Location phone = new Location("phone");
     Location locationA = new Location("DeeWhy");
     Location m = new Location("test");
-    LocationRequest mLocationRequest;
     LatLng currentLocation = new LatLng(0, 0); // testing latlng object
 
 
@@ -216,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
+
                         onLocationChanged(locationResult.getLastLocation());
                     }
                 },
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getLastLocation() {
-        
+
         FusedLocationProviderClient locationClient = getFusedLocationProviderClient(this);
             // CHECK FOR PERMISSION
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -244,6 +244,11 @@ public class MainActivity extends AppCompatActivity {
                         // GPS location can be null if GPS is switched off
                         if (location != null) {
                             onLocationChanged(location);
+                            userLocationLongitude = location.getLongitude();
+                            userLocationLatitude = location.getLatitude();
+
+                            data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
+
                         }
                     }
                 })
@@ -337,6 +342,8 @@ public class MainActivity extends AppCompatActivity {
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        homeLng = location.getLongitude();
+        homeLat = location.getLatitude();
         // You can now create a LatLng Object for use with maps
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
