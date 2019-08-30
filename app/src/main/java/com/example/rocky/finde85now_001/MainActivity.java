@@ -58,12 +58,13 @@ public class MainActivity extends AppCompatActivity {
     float[] straightLineDistanceInMeters = new float[1];
 
     //Arrays to hold station lists
-    double dist[] = new double[10];
+    double storedStations[] = new double[6];
+
+    double distance[] = new double[6];
+    double [][] distanceTable = new double[2][3];
     ArrayList<Double> possibleDest = new ArrayList<>();
 
     Location phone = new Location("phone");
-    Location locationA = new Location("DeeWhy");
-    Location m = new Location("test");
     LatLng currentLocation = new LatLng(0, 0); // testing latlng object
 
 
@@ -123,9 +124,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+            storedStations[0] = -33.649917; // rydalmere united
+            storedStations[1] = 151.121270;
+
+            storedStations[2] = -33.901877;
+            storedStations[3] = 151.037178;
+
+            storedStations[4] = -33.810202;
+            storedStations[5] = 151.032491;
+
+
         click = findViewById(R.id.button);
         data = findViewById(R.id.fetchedData);
 
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         click.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,10 +167,6 @@ public class MainActivity extends AppCompatActivity {
         //getDeviceLocation();
         //getDistanceBetween();
 
-        for (double d : possibleDest) {
-            String numberAsString = Double.toString(d);
-            Log.d("DESTINATIONS", numberAsString); // testing the straight line distances in meters for all stations in syd
-        }
     }
 
     protected void startLocationUpdates() {
@@ -240,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
                             userLocationLatitude = location.getLatitude();
 
                             data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
-
+                            getDistanceBetween();
                         }
                     }
                 })
@@ -388,56 +397,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    // call this once the device pos has been received
     private void getDistanceBetween() {
 
-        // How to assign the correct stations to the distances??
+        for(int i = 0; i<storedStations.length; i+=2 ){
+
+            Location.distanceBetween(storedStations[i], storedStations[i+1], homeLat, homeLng, straightLineDistanceInMeters);
+
+            distance[i] = straightLineDistanceInMeters[0];
+
+            if(straightLineDistanceInMeters[0] < 30000){
+
+                possibleDest.add(storedStations[i]);
+                possibleDest.add(storedStations[i+1]);
+            }
+                else{
 
 
-        phone.setLongitude(userLocationLongitude);
-        phone.setLatitude(userLocationLatitude);
-//
-       locationA.setLatitude(deeWhyE85Lat);
-        locationA.setLongitude(deeWhyE85Lng);
-//
-//        dist[0] = test.distanceTo(locationA);
-    String number = Double.toString(homeLat);
-       Log.d("distanceBetweenMethod", number);
-
-        Location.distanceBetween(rydalmereE85Lat, rydalemereE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-        dist[0] = straightLineDistanceInMeters[0];
-//        Location.distanceBetween(deeWhyE85Lat, deeWhyE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-//        dist[0] = straightLineDistanceInMeters[0];
-        Location.distanceBetween(vineyardE85Lat, vineyardE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-        dist[1] = straightLineDistanceInMeters[0];
-//        Location.distanceBetween(eastBlaxlandE85Lat, eastBlaxlandE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-//        dist[3] = straightLineDistanceInMeters[0];
-//        Location.distanceBetween(rozelleE85Lat, rozelleE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-//        dist[4] = straightLineDistanceInMeters[0];
-//        Location.distanceBetween(waterlooE85Lat, waterlooE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-//        dist[5] = straightLineDistanceInMeters[0];
-        Location.distanceBetween(yagonnaE85Lat, yagonnaE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-        dist[2] = straightLineDistanceInMeters[0];
-//        Location.distanceBetween(yagonna1E85Lat, yagoona1E85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-//        dist[7] = straightLineDistanceInMeters[0];
-//        Location.distanceBetween(prairiewoodE85Lat, prairiewoodE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-//        dist[8] = straightLineDistanceInMeters[0];
-//        Location.distanceBetween(mintoE85Lat, mintoE85Lng, userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
-//        dist[9] = straightLineDistanceInMeters[0];
-
-        //checkForStationsWithinRange and store the ones within 95km straight line distance
-
-        for(int i = 0; i<dist.length; i++ ){
-            if(dist[i] < 40000){
-                possibleDest.add(dist[i]);
 
             }
 
+            String distanceInStraightLine = Double.toString(distance[i]);
+            Log.d("distanceInStraightLine", distanceInStraightLine);
         }
 
+        for (double d : possibleDest) {
+            String stationsWithinRange = Double.toString(d);
+            Log.d("stationsWithinRange", stationsWithinRange); // testing the straight line distances in meters for all stations in syd
+        }
 
     }
-
 
 }
 
