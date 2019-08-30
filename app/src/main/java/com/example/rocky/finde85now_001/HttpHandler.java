@@ -65,7 +65,7 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
 
             JSONObject element0 = elements.getJSONObject(0);
 
-            JSONObject durationObject = element0.getJSONObject("duration");
+            JSONObject durationObject = element0.getJSONObject("duration_in_traffic");
             String durationInSeconds = durationObject.getString("value");
 
 
