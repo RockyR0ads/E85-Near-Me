@@ -49,7 +49,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
     Button click;
+
+    //fix me
     public static TextView data;
+    public static TextView textView;
 
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
@@ -58,61 +61,34 @@ public class MainActivity extends AppCompatActivity {
     float[] straightLineDistanceInMeters = new float[1];
 
     //Arrays to hold station lists
-    double storedStations[] = new double[6];
+    double storedStations[] = new double[20];
 
-    double distance[] = new double[6];
-    double [][] distanceTable = new double[2][3];
-    ArrayList<Double> possibleDest = new ArrayList<>();
+    double distance[] = new double[20];
+    double [][] distanceTable = new double[2][3]; // 2D array
+
+    private static ArrayList<Double> possibleDest = new ArrayList<>();
+
+    public static ArrayList<Double> returnList(){
+
+        return (possibleDest);
+    }
 
     Location phone = new Location("phone");
     LatLng currentLocation = new LatLng(0, 0); // testing latlng object
 
 
-    private double homeLat = 0.0;
-    private double homeLng = 0.0;
+    private double deviceLat = 0.0;
+    private double deviceLng = 0.0;
 
-    final static double homeLat1 = -33.926360;
-    final static double homeLng1 = 151.121270;
+    final static double homeLat = -33.926360;
+    final static double homeLng = 151.121270;
 
-    // e85 in Sydney
-
-    final static double deeWhyE85Lat = -33.755790;
-    final static double deeWhyE85Lng = 151.282715;
-
-    final static double vineyardE85Lat = -33.649917;
-    final static double vineyardE85Lng = 150.862685;
-
-    final static double eastBlaxlandE85Lat = -33.746039;
-    final static double eastBlaxlandE85Lng = 150.622454;
-
-    final static double rozelleE85Lat = -33.861967;
-    final static double rozelleE85Lng = 151.167653;
-
-    final static double waterlooE85Lat = -33.901910;
-    final static double waterlooE85Lng = 151.208229;
-
-    final static double yagonnaE85Lat = -33.901877;
-    final static double yagonnaE85Lng = 151.037178;
-
-    final static double yagonna1E85Lat = -33.899258;
-    final static double yagoona1E85Lng = 151.036924;
-
-    final static double prairiewoodE85Lat = -33.872234;
-    final static double prairiewoodE85Lng = 150.900077;
-
-    final static double mintoE85Lat = -34.030073;
-    final static double mintoE85Lng = 150.831892;
-
-    final static double rydalmereE85Lat = -33.810202;
-    final static double rydalemereE85Lng = 151.032491;
-
-
-    public double getUserLocationLatitude() {
+    public  static double getUserLocationLatitude() {
 
         return userLocationLatitude;
     }
 
-    public double getUserLocationLongitude() {
+    public static double getUserLocationLongitude() {
         return userLocationLongitude;
     }
 
@@ -124,19 +100,42 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+            // store all SYDNEY stations in array
 
-            storedStations[0] = -33.649917; // rydalmere united
-            storedStations[1] = 151.121270;
+            storedStations[0] = -33.649917; // vineyard
+            storedStations[1] = 150.862685;
 
-            storedStations[2] = -33.901877;
+            storedStations[2] = -33.901877; // yagoona
             storedStations[3] = 151.037178;
 
-            storedStations[4] = -33.810202;
+            storedStations[4] = -33.810202; // rydalmere
             storedStations[5] = 151.032491;
+
+            storedStations[6] = -33.755790; // Dee Why
+            storedStations[7] = 151.282715;
+
+            storedStations[8] = -33.746039; // east Blaxland
+            storedStations[9] = 150.622454;
+
+            storedStations[10] = -33.861967; // Rozelle
+            storedStations[11] = 151.167653;
+
+            storedStations[12] = -33.901910; // waterloo
+            storedStations[13] = 151.208229;
+
+            storedStations[14] = -33.899258; // yagoona1
+            storedStations[15] = 151.036924;
+
+            storedStations[16] = -33.872234; // prairewood
+            storedStations[17] = 150.900077;
+
+            storedStations[18] = -34.030073; // minto
+            storedStations[19] = 150.831892;
 
 
         click = findViewById(R.id.button);
         data = findViewById(R.id.fetchedData);
+        textView = findViewById(R.id.textView);
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -208,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
-                        onLocationChanged(locationResult.getLastLocation());
+                       // onLocationChanged(locationResult.getLastLocation());
                     }
                 },
                 Looper.myLooper());
@@ -284,8 +283,8 @@ public class MainActivity extends AppCompatActivity {
 
                     // TODO: double setting user location not needed - refactor all uses of userLocationLongitude -> Device
 
-                    homeLng = userLocationLongitude;
-                    homeLat = userLocationLatitude;
+                    deviceLat = userLocationLongitude;
+                    deviceLng = userLocationLatitude;
 
                 }
                 else{data.setText("location is null");}
@@ -313,15 +312,15 @@ public class MainActivity extends AppCompatActivity {
                                     userLocationLongitude = location.getLongitude();
                                     userLocationLatitude = location.getLatitude();
 
-                                    homeLat = userLocationLatitude;
-                                    homeLng = userLocationLongitude;
+                                    deviceLat = userLocationLatitude;
+                                    deviceLng = userLocationLongitude;
 
                                     data.setText("Longitute: " + location.getLongitude() + "\nLatitude: " + homeLng);
 
 
 
 
-                                    onLocationChanged(location);
+                                    //onLocationChanged(location);
 
                                 }
                                 else{data.setText("location is null");}
@@ -341,8 +340,8 @@ public class MainActivity extends AppCompatActivity {
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        homeLng = location.getLongitude();
-        homeLat = location.getLatitude();
+        deviceLng = location.getLongitude();
+        deviceLat = location.getLatitude();
         // You can now create a LatLng Object for use with maps
         currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
         data.setText("Longitute: " + homeLng + "\nLatitude: " + homeLat);
@@ -400,25 +399,23 @@ public class MainActivity extends AppCompatActivity {
     // call this once the device pos has been received
     private void getDistanceBetween() {
 
-        for(int i = 0; i<storedStations.length; i+=2 ){
+        for(int i = 0; i < storedStations.length; i++ ){
 
-            Location.distanceBetween(storedStations[i], storedStations[i+1], homeLat, homeLng, straightLineDistanceInMeters);
+            Location.distanceBetween(storedStations[i], storedStations[i+1], deviceLat, deviceLng, straightLineDistanceInMeters);
 
             distance[i] = straightLineDistanceInMeters[0];
 
-            if(straightLineDistanceInMeters[0] < 30000){
+            // store sub 30km stations in a straight line
+            if(straightLineDistanceInMeters[0] < 9000){
 
                 possibleDest.add(storedStations[i]);
                 possibleDest.add(storedStations[i+1]);
             }
-                else{
-
-
-
-            }
 
             String distanceInStraightLine = Double.toString(distance[i]);
             Log.d("distanceInStraightLine", distanceInStraightLine);
+
+            i+=1;
         }
 
         for (double d : possibleDest) {
