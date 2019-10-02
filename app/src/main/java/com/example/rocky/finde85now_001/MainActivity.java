@@ -2,9 +2,11 @@ package com.example.rocky.finde85now_001;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -58,6 +60,12 @@ public class MainActivity extends AppCompatActivity {
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
 
+
+   // public String address = " ";
+    private String format = " ";
+    private String test = "127 Victoria Rd, Rozelle NSW 2039, Australia";
+
+
     float[] straightLineDistanceInMeters = new float[1];
 
     //Arrays to hold station lists
@@ -94,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static double userLocationLongitude;
     private static double userLocationLatitude;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,23 +152,20 @@ public class MainActivity extends AppCompatActivity {
         click.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                HttpHandler process = new HttpHandler();
+                HttpHandler process = new HttpHandler(getApplicationContext());
+
                 process.execute();
+                //address = HttpHandler.getGoldenAddress();
+                //data.setText(address);
+                //pushToMaps();
+
+
+
+
             }
         });
 
-        // SEND THE STATION TO GOOGLE MAPS TO LAUNCH DIRECTIONS TO IT
 
-//        String format = "google.navigation:q=" + lat + "," + lng + "&mode=d"; // setup the string to pass
-//
-//        Uri uri = Uri.parse(format); // parse it into a format maps can read
-
-//        Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
-//        launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
-//        launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
-//        startActivity(launchMap);
-
-//        android.os.Process.killProcess(android.os.Process.myPid()); // kill the process running this activity
 
         startLocationUpdates();
        // getLocationPermission();
@@ -166,6 +173,24 @@ public class MainActivity extends AppCompatActivity {
         //getDeviceLocation();
         //getDistanceBetween();
 
+
+
+    }
+
+    public void pushToMaps(String address){
+
+       // SEND THE STATION TO GOOGLE MAPS TO LAUNCH DIRECTIONS TO IT
+
+        format = "google.navigation:q=" + address; // setup the string to pass
+
+        Uri uri = Uri.parse(format); // parse it into a format maps can read
+
+        Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
+        launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
+        launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
+        startActivity(launchMap);
+
+        android.os.Process.killProcess(android.os.Process.myPid()); // kill the process running this activity
     }
 
     protected void startLocationUpdates() {
