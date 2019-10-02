@@ -1,5 +1,8 @@
 package com.example.rocky.finde85now_001;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 
 import org.json.JSONArray;
@@ -10,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 
@@ -24,13 +28,33 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
    private String singleParsed = "";
    private int index = 0;
    private int location[] = new int[4];
+   public static String goldenAddress = " ";
 
-    //MainActivity MA = new MainActivity();
+
+   private WeakReference<Context> contextRef;
+
+    public HttpHandler(Context context) {
+        contextRef = new WeakReference<>(context);
+    }
+
+
+
+
+    public static String getGoldenAddress() {
+        return goldenAddress;
+    }
+
+    public void setGoldenAddress(String goldenAddress) {
+        this.goldenAddress = goldenAddress;
+    }
+
+
     private double lat = MainActivity.getUserLocationLatitude();
     private double lng = MainActivity.getUserLocationLongitude();
 
     @Override
     protected Void doInBackground(Void... voids){
+
 
         ArrayList<Double> list = MainActivity.returnList();
 
@@ -91,21 +115,18 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
 
               if(closestLocation > location[i]) {
                   closestLocation = location[i];
-                  index = i;
+                  index++;
               }
                 else{
-                  index = 0;
+                 index = 0;
               }
           }
 
-            String goldenAddress = destAddresses.getString(index);
-
-
-
-            singleParsed = "distance to destination: " + goldenAddress;
+            //goldenAddress = destAddresses.getString(1); // HARDCODED INDEX
+            setGoldenAddress(destAddresses.getString(0));
+            singleParsed = "destination address: " + goldenAddress;
 
                 dataParsed = dataParsed + singleParsed + "\n";
-
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -122,7 +143,24 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-       MainActivity.data.setText(this.singleParsed);
+        Context context = contextRef.get();
+        if (context != null) {
+            // do whatever you'd like with context
+
+            String format = "google.navigation:q=" + goldenAddress; // setup the string to pass
+
+            Uri uri = Uri.parse(format); // parse it into a format maps can read
+
+            Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
+            launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
+            launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
+            context.startActivity(launchMap);
+        }
+
+        //MainActivity.data.setText(goldenAddress);
+
+
+
     }
 }
 
