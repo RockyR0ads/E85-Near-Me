@@ -149,44 +149,27 @@ public class MainActivity extends AppCompatActivity {
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        // run the HTTP request onClick
+
         click.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 HttpHandler process = new HttpHandler(getApplicationContext());
                 process.execute();
-                finishAffinity();
-                System.exit(0);
+//                finishAffinity();
+//                System.exit(0);
 
 
             }
         });
 
+        // run the required methods
 
+        //startLocationUpdates();
+       // getLastLocation();
 
-        startLocationUpdates();
-       // getLocationPermission();
-        getLastLocation();
-        //getDeviceLocation();
-        //getDistanceBetween();
+        getDeviceLocation();
 
-
-
-    }
-
-    public void pushToMaps(String address){
-
-       // SEND THE STATION TO GOOGLE MAPS TO LAUNCH DIRECTIONS TO IT
-
-        format = "google.navigation:q=" + address; // setup the string to pass
-
-        Uri uri = Uri.parse(format); // parse it into a format maps can read
-
-        Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
-        launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
-        launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
-        startActivity(launchMap);
-
-        android.os.Process.killProcess(android.os.Process.myPid()); // kill the process running this activity
     }
 
     protected void startLocationUpdates() {
@@ -258,15 +241,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Get last known recent location using new Google Play Services SDK (v11+)
+
         locationClient.getLastLocation()
                 .addOnSuccessListener(new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
                         // GPS location can be null if GPS is switched off
                         if (location != null) {
+
                             onLocationChanged(location);
-                            userLocationLongitude = location.getLongitude();
-                            userLocationLatitude = location.getLatitude();
+
+                            userLocationLongitude = 151.049502;
+                            userLocationLatitude = -33.830092;
 
                             data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
                             getDistanceBetween();
@@ -284,41 +270,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // THIS is a version of getting current location that didnt update correctly
-    private void getDeviceLocation() {
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
-        try {
-            if (mLocationPermissionGranted) {
-                LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-                Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-                if(location!=null) {
-
-                    userLocationLongitude = location.getLongitude();
-                    userLocationLatitude = location.getLatitude();
-
-                    data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
-
-                    // TODO: double setting user location not needed - refactor all uses of userLocationLongitude -> Device
-
-                    deviceLat = userLocationLongitude;
-                    deviceLng = userLocationLatitude;
-
-                }
-                else{data.setText("location is null");}
-            }
-        } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
-        }
-    }
 
     // THIS DOES NOT WORK FIND A WAY TO MAKE THIS WORK
-    private void getDeviceLocation1() {
+
+    private void getDeviceLocation() {
 
         try {
+                getLocationPermission();
+
             if (mLocationPermissionGranted) {
                 mFusedLocationProviderClient.getLastLocation()
                         .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -328,20 +288,14 @@ public class MainActivity extends AppCompatActivity {
                                 if (location != null) {
                                     // Logic to handle location object
 
-
-
                                     userLocationLongitude = location.getLongitude();
                                     userLocationLatitude = location.getLatitude();
 
-                                    deviceLat = userLocationLatitude;
-                                    deviceLng = userLocationLongitude;
+//                                    userLocationLongitude = 151.049502; // silverwater test
+//                                    userLocationLatitude = -33.830092;
 
-                                    data.setText("Longitute: " + location.getLongitude() + "\nLatitude: " + homeLng);
-
-
-
-
-                                    //onLocationChanged(location);
+                                    data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
+                                    getDistanceBetween();
 
                                 }
                                 else{data.setText("location is null");}
@@ -371,29 +325,29 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-//    private void getLocationPermission() {
-//        /*
-//         * Request location permission, so that we can get the location of the
-//         * device. The result of the permission request is handled by a callback,
-//         * onRequestPermissionsResult.
-//         *
-//         */
-//        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-//                android.Manifest.permission.ACCESS_FINE_LOCATION)
-//                == PackageManager.PERMISSION_GRANTED) {
-//
-//            mLocationPermissionGranted = true;
-//
-//        } else {
-//
-//            // No explanation needed; request the permission
-//            ActivityCompat.requestPermissions(this,
-//                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-//                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-//        }
-//
-//
-//    }
+    private void getLocationPermission() {
+        /*
+         * Request location permission, so that we can get the location of the
+         * device. The result of the permission request is handled by a callback,
+         * onRequestPermissionsResult.
+         *
+         */
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            mLocationPermissionGranted = true;
+
+        } else {
+
+            // No explanation needed; request the permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+
+
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -403,11 +357,12 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
-
+                    getDeviceLocation();
                     // permission was granted, yay! Do the things
                  } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
+                    textView.setText(" This \n application \n requires \n location \n permissions \n to run");
                 }
 
             }
@@ -422,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
 
         for(int i = 0; i < storedStations.length; i++ ){
 
-            Location.distanceBetween(storedStations[i], storedStations[i+1], deviceLat, deviceLng, straightLineDistanceInMeters);
+            Location.distanceBetween(storedStations[i], storedStations[i+1], userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
 
             distance[i] = straightLineDistanceInMeters[0];
 
@@ -461,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
  ------------------------------------------------------------------------------------------------------
 
  - Compliance for app store listing to be complete
- - Ask for permission before first launch
+ 
 
 
  */
