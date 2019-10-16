@@ -153,13 +153,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 HttpHandler process = new HttpHandler(getApplicationContext());
-
                 process.execute();
-                //address = HttpHandler.getGoldenAddress();
-                //data.setText(address);
-                //pushToMaps();
-
-
+                finishAffinity();
+                System.exit(0);
 
 
             }
@@ -431,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
             distance[i] = straightLineDistanceInMeters[0];
 
             // store sub 30km stations in a straight line
-            if(straightLineDistanceInMeters[0] < 9000){
+            if(straightLineDistanceInMeters[0] < 30000){
 
                 possibleDest.add(storedStations[i]);
                 possibleDest.add(storedStations[i+1]);
@@ -458,11 +454,12 @@ public class MainActivity extends AppCompatActivity {
  - Taking current GPS position of phone and calculating the distance to a fixed location in seconds
  - get a list of stations within 200km and plug them into the URL request
  - get straight line distances from phone to all Syd stations then keep all below 45km
+ - Take the Json output of multiple possible destinations and check which is the closest in seconds
+ - Store winning stations Coord pos and send the maps request with those coords over to the offical app
 
  ITEMS TO COMPLETE
  ------------------------------------------------------------------------------------------------------
- - Take the Json output of multiple possible destinations and check which is the closest in seconds
- - Store winning stations Coord pos and send the maps request with those coords over to the offical app
+
  - Compliance for app store listing to be complete
  - Ask for permission before first launch
 
