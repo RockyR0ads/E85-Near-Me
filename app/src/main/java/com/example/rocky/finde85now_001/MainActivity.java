@@ -158,8 +158,6 @@ public class MainActivity extends AppCompatActivity {
                 process.execute();
 //                finishAffinity();
 //                System.exit(0);
-
-
             }
         });
 
@@ -268,11 +266,6 @@ public class MainActivity extends AppCompatActivity {
                 });
 
     }
-
-
-
-
-    // THIS DOES NOT WORK FIND A WAY TO MAKE THIS WORK
 
     private void getDeviceLocation() {
 
@@ -416,7 +409,7 @@ public class MainActivity extends AppCompatActivity {
  ------------------------------------------------------------------------------------------------------
 
  - Compliance for app store listing to be complete
- 
+
 
 
  */
