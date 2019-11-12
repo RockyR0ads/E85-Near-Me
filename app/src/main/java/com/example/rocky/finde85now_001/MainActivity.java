@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
    // public String address = " ";
     private String format = " ";
+    public String locationsToSend = "";
     private String test = "127 Victoria Rd, Rozelle NSW 2039, Australia";
 
 
@@ -72,21 +73,17 @@ public class MainActivity extends AppCompatActivity {
     double storedStations[] = new double[20];
 
     double distance[] = new double[20];
-    double [][] distanceTable = new double[2][3]; // 2D array
 
-    private static ArrayList<Double> possibleDest = new ArrayList<>();
+    private static ArrayList<String> possibleDest = new ArrayList<>();
+    private static ArrayList<String> stringConstructor = new ArrayList<>();
 
-    public static ArrayList<Double> returnList(){
+    public static ArrayList<String> returnList(){
 
         return (possibleDest);
     }
 
     Location phone = new Location("phone");
     LatLng currentLocation = new LatLng(0, 0); // testing latlng object
-
-
-    private double deviceLat = 0.0;
-    private double deviceLng = 0.0;
 
     final static double homeLat = -33.926360;
     final static double homeLng = 151.121270;
@@ -289,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
                                     getDistanceBetween();
-
+                                    stringConstructor();
                                 }
                                 else{data.setText("location is null");}
                             }
@@ -308,8 +305,8 @@ public class MainActivity extends AppCompatActivity {
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        deviceLng = location.getLongitude();
-        deviceLat = location.getLatitude();
+     //   deviceLng = location.getLongitude();
+      //  deviceLat = location.getLatitude();
         // You can now create a LatLng Object for use with maps
         currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
         data.setText("Longitute: " + homeLng + "\nLatitude: " + homeLat);
@@ -375,10 +372,10 @@ public class MainActivity extends AppCompatActivity {
             distance[i] = straightLineDistanceInMeters[0];
 
             // store sub 30km stations in a straight line
-            if(straightLineDistanceInMeters[0] < 30000){
+            if(straightLineDistanceInMeters[0] < 10000){
 
-                possibleDest.add(storedStations[i]);
-                possibleDest.add(storedStations[i+1]);
+                possibleDest.add(storedStations[i]+"");
+                possibleDest.add(storedStations[i+1]+"");
             }
 
             String distanceInStraightLine = Double.toString(distance[i]);
@@ -386,12 +383,67 @@ public class MainActivity extends AppCompatActivity {
 
             i+=1;
         }
+//        int size = 0;
+//        int testSize = 0;
+//        int i = 0;
+//        StringBuilder sb = new StringBuilder();
+//        size = possibleDest.size();
+//        testSize = size-1;
+//        for (String d : possibleDest) {
+//            //String stationsWithinRange = Double.toString(d);
+//
+//            if(i % 2 == 0){
+//                sb.append(d + ",");
+//            }
+//            else if(i!=testSize){
+//
+//                    sb.append(d + "|");
+//            }
+//            if(i==testSize) {
+//                sb.append(d);
+//            }
+//
+//            i++;
+//            Log.d("stationsWithinRange", d); // testing the straight line distances in meters for all stations in syd
+//
+//        }
+//             String locs = sb.toString();
+//
+//             Log.d("stringConstructor", locs);
 
-        for (double d : possibleDest) {
-            String stationsWithinRange = Double.toString(d);
-            Log.d("stationsWithinRange", stationsWithinRange); // testing the straight line distances in meters for all stations in syd
+    }
+
+    private void stringConstructor(){
+
+        // create the string of coordinates to be send in the HTTPS request based of the closest stations decided in getDistanceBetween
+
+        int size = 0;
+        int testSize = 0;
+        int i = 0;
+        StringBuilder sb = new StringBuilder();
+        size = possibleDest.size();
+        testSize = size-1;
+        for (String d : possibleDest) {
+            //String stationsWithinRange = Double.toString(d);
+
+            if(i % 2 == 0){
+                sb.append(d + ",");
+            }
+            else if(i!=testSize){
+
+                sb.append(d + "|");
+            }
+            if(i==testSize) {
+                sb.append(d);
+            }
+
+            i++;
+            Log.d("stationsWithinRange", d); // testing the straight line distances in meters for all stations in syd
+
         }
+        locationsToSend = sb.toString();
 
+        Log.d("stringConstructor", locationsToSend);
     }
 
 }
