@@ -4,17 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#212121"
     tools:context="com.example.rocky.finde85now_001.MainActivity">
-
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="Hello World!"-->
-        <!--android:id="@+id/result"-->
-        <!--app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--app:layout_constraintLeft_toLeftOf="parent"-->
-        <!--app:layout_constraintRight_toRightOf="parent"-->
-        <!--app:layout_constraintTop_toTopOf="parent" />-->
 
     <Button
         android:layout_width="wrap_content"
@@ -28,20 +19,23 @@
         <TextView
             android:id="@+id/fetchedData"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="80dp"
             android:layout_below="@id/button"
             android:hint="fetched text here"
+            android:textColor="#558B2F"
             android:padding="5dp"
             android:textSize="24sp" />
 
 
         <TextView
             android:id="@+id/textView"
-            android:layout_width="315dp"
-            android:layout_height="254dp"
-            android:layout_marginStart="42dp"
-            android:layout_marginTop="148dp"
-            android:text="TextView" />
+            android:layout_width="match_parent"
+            android:layout_below="@id/fetchedData"
+            android:layout_height="match_parent"
+            android:textColor="#558B2F"
+            android:textSize="50dp"
+            android:textStyle="bold"
+            android:text="Boo" />
 
 
 
