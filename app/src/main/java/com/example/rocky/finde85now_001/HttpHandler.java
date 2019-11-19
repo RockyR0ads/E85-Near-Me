@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 public class HttpHandler extends AsyncTask<Void,Void,Void> {
@@ -26,9 +29,10 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
    private String singleParsed = "";
    private int index = 0;
    private int location[] = new int[8];
+   private static ArrayList<Integer> theLocation = new ArrayList<>();
    public static String goldenAddress = " ";
    Boolean check = false;
-
+   MainActivity MA = new MainActivity();
    private WeakReference<Context> contextRef;
 
     public HttpHandler(Context context) {
@@ -54,17 +58,14 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
     protected Void doInBackground(Void... voids){
 
 
-        ArrayList<String> list = MainActivity.returnList();
-        MainActivity MA = new MainActivity();
-        String location = MA.locationsToSend;
+       ArrayList<String> list = MainActivity.returnList();
+
+        String locationString = MA.locationsToSend;
         try {
 
             URL url = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng +"&destinations=Rydalmere,NSW&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
-
-            URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng +"&destinations=" + location + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
-
-
+            URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=" + list.get(0)+","+list.get(1)+"|"+list.get(2)+","+list.get(3)+"|"+list.get(4)+","+list.get(5)+"|"+list.get(6)+","+list.get(7) + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
             URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng +"&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
@@ -78,63 +79,68 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
                     data = data + line;
                 }
 
+                //Parse the data in a readable manner
 
-            //Parse the data in a readable manner
+                JSONObject JO = new JSONObject(data);
+                JSONArray rowsArray = JO.getJSONArray("rows");
+                JSONArray destAddresses = JO.getJSONArray("destination_addresses");
+                JSONObject row0 = rowsArray.getJSONObject(0);
+                JSONArray elements = row0.getJSONArray("elements");
 
-            //JSONArray JA = new JSONArray(data); // get the Array
+             int closestLocation = 20000; // HARDCODED NUMBER
 
-            JSONObject JO = new JSONObject(data);
+           for (int i = 0; i < elements.length (); ++i) {
 
+               JSONObject objects = elements.getJSONObject(i);
 
-            JSONArray rowsArray = JO.getJSONArray("rows");
+               JSONObject durationObject = objects.getJSONObject("duration_in_traffic");
 
-            JSONArray destAddresses = JO.getJSONArray("destination_addresses");
+               theLocation.add(durationObject.getInt("value"));
 
-            JSONObject row0 = rowsArray.getJSONObject(0);
+               if(closestLocation > theLocation.get(i)) {
+                   closestLocation = theLocation.get(i);
+                   index = i;
+               }
 
-            JSONArray elements = row0.getJSONArray("elements");
+           }
 
-            JSONObject element0 = elements.getJSONObject(0);
-            JSONObject element1 = elements.getJSONObject(1);
-            JSONObject element2 = elements.getJSONObject(2);
-            JSONObject element3 = elements.getJSONObject(3);
-            JSONObject element4 = elements.getJSONObject(4);
-            JSONObject element5 = elements.getJSONObject(5);
-            JSONObject element6 = elements.getJSONObject(6);
-            JSONObject element7 = elements.getJSONObject(7);
+            if(theLocation.get(0) == closestLocation) {
+                index = 0;
+            }
 
-            JSONObject durationObject0 = element0.getJSONObject("duration_in_traffic");
-            JSONObject durationObject1 = element1.getJSONObject("duration_in_traffic");
-            JSONObject durationObject2 = element2.getJSONObject("duration_in_traffic");
-            JSONObject durationObject3 = element3.getJSONObject("duration_in_traffic");
-            JSONObject durationObject4 = element4.getJSONObject("duration_in_traffic");
-            JSONObject durationObject5 = element5.getJSONObject("duration_in_traffic");
-            JSONObject durationObject6 = element6.getJSONObject("duration_in_traffic");
-            JSONObject durationObject7 = element7.getJSONObject("duration_in_traffic");
+                // OLD HARDCODED IMPLEMENTATION, KEEPING INCASE ABOVE DOESNT WORK CORRECTLY
 
-            location[0] = durationObject0.getInt("value");
-            location[1] = durationObject1.getInt("value");
-            location[2] = durationObject2.getInt("value");
-            location[3] = durationObject3.getInt("value");
-            location[4] = durationObject4.getInt("value");
-            location[5] = durationObject5.getInt("value");
-            location[6] = durationObject6.getInt("value");
-            location[7] = durationObject7.getInt("value");
+//                JSONObject element1 = elements.getJSONObject(1);
+//                JSONObject element2 = elements.getJSONObject(2);
+//                JSONObject element3 = elements.getJSONObject(3);
+//
+//
+//            JSONObject durationObject0 = element0.getJSONObject("duration_in_traffic");
+//            JSONObject durationObject1 = element1.getJSONObject("duration_in_traffic");
+//            JSONObject durationObject2 = element2.getJSONObject("duration_in_traffic");
+//            JSONObject durationObject3 = element3.getJSONObject("duration_in_traffic");
+//
+//
+//            location[0] = durationObject0.getInt("value");
+//            location[1] = durationObject1.getInt("value");
+//            location[2] = durationObject2.getInt("value");
+//            location[3] = durationObject3.getInt("value");
+
 
             // compare elements then take the element which wins and use the number to get the address
 
-           int closestLocation = location[0];
+          // int closestLocation = location[0];
 
-          for(int i = 1; i <= 7; i++){
-
-              if(closestLocation > location[i]) {
-                  closestLocation = location[i];
-                  index = i;
-              }
-         }
-              if(location[0] == closestLocation) {
-                index = 0;
-              }
+//          for(int i = 1; i <= 4; i++){
+//
+//              if(closestLocation > location[i]) {
+//                  closestLocation = location[i];
+//                  index = i;
+//              }
+//         }
+//              if(location[0] == closestLocation) {
+//                index = 0;
+//              }
 
             setGoldenAddress(destAddresses.getString(index));
             singleParsed = "destination address: " + goldenAddress;

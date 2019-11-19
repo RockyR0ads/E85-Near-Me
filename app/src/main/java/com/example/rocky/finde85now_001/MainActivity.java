@@ -383,33 +383,6 @@ public class MainActivity extends AppCompatActivity {
 
             i+=1;
         }
-//        int size = 0;
-//        int testSize = 0;
-//        int i = 0;
-//        StringBuilder sb = new StringBuilder();
-//        size = possibleDest.size();
-//        testSize = size-1;
-//        for (String d : possibleDest) {
-//            //String stationsWithinRange = Double.toString(d);
-//
-//            if(i % 2 == 0){
-//                sb.append(d + ",");
-//            }
-//            else if(i!=testSize){
-//
-//                    sb.append(d + "|");
-//            }
-//            if(i==testSize) {
-//                sb.append(d);
-//            }
-//
-//            i++;
-//            Log.d("stationsWithinRange", d); // testing the straight line distances in meters for all stations in syd
-//
-//        }
-//             String locs = sb.toString();
-//
-//             Log.d("stringConstructor", locs);
 
     }
 
@@ -420,9 +393,11 @@ public class MainActivity extends AppCompatActivity {
         int size = 0;
         int testSize = 0;
         int i = 0;
+
         StringBuilder sb = new StringBuilder();
         size = possibleDest.size();
         testSize = size-1;
+
         for (String d : possibleDest) {
             //String stationsWithinRange = Double.toString(d);
 
@@ -439,11 +414,13 @@ public class MainActivity extends AppCompatActivity {
 
             i++;
             Log.d("stationsWithinRange", d); // testing the straight line distances in meters for all stations in syd
-
+            Log.d("stationsWithinRange", d);
         }
         locationsToSend = sb.toString();
 
-        Log.d("stringConstructor", locationsToSend);
+        Log.d("locationsToSend", locationsToSend);
+
+
     }
 
 }
