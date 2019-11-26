@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
+
     Button click;
 
     //fix me
@@ -59,37 +60,31 @@ public class MainActivity extends AppCompatActivity {
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 2000; /* 2 sec */
-
-
-   // public String address = " ";
-    private String format = " ";
-    private String test = "127 Victoria Rd, Rozelle NSW 2039, Australia";
-
-
-    float[] straightLineDistanceInMeters = new float[1];
-
-    //Arrays to hold station lists
-    double storedStations[] = new double[20];
-
-    double distance[] = new double[20];
-    double [][] distanceTable = new double[2][3]; // 2D array
-
-    private static ArrayList<Double> possibleDest = new ArrayList<>();
-
-    public static ArrayList<Double> returnList(){
-
-        return (possibleDest);
-    }
-
-    Location phone = new Location("phone");
-    LatLng currentLocation = new LatLng(0, 0); // testing latlng object
-
-
-    private double deviceLat = 0.0;
-    private double deviceLng = 0.0;
+    private static double userLocationLongitude;
+    private static double userLocationLatitude;
+    private static String locationsToSend = "";
 
     final static double homeLat = -33.926360;
     final static double homeLng = 151.121270;
+
+    //Arrays to hold station lists
+    double distance[] = new double[24];
+    double storedStations[] = new double[24];
+
+    float[] straightLineDistanceInMeters = new float[1];
+
+    private static ArrayList<String> possibleDest = new ArrayList<>();
+
+    //GETTERS & SETTERS
+
+    public static String getLocationsToSend() {
+        return locationsToSend;
+    }
+
+    public static ArrayList<String> returnList(){
+
+        return (possibleDest);
+    }
 
     public  static double getUserLocationLatitude() {
 
@@ -100,17 +95,12 @@ public class MainActivity extends AppCompatActivity {
         return userLocationLongitude;
     }
 
-    private static double userLocationLongitude;
-    private static double userLocationLatitude;
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-            // store all SYDNEY stations in array
+            // store all SYDNEY United stations in array
 
             storedStations[0] = -33.649917; // vineyard
             storedStations[1] = 150.862685;
@@ -142,6 +132,16 @@ public class MainActivity extends AppCompatActivity {
             storedStations[18] = -34.030073; // minto
             storedStations[19] = 150.831892;
 
+            // Caltex Stations
+
+            storedStations[20] = -33.856990; // Drummoyne
+            storedStations[21] = 151.146040;
+
+            storedStations[22] = -33.925350; // Tempe
+            storedStations[23] = 151.159680;
+
+
+
 
         click = findViewById(R.id.button);
         data = findViewById(R.id.fetchedData);
@@ -149,8 +149,9 @@ public class MainActivity extends AppCompatActivity {
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // run the HTTP request onClick
+        getDeviceLocation();
 
+        // run the HTTP request onClick
         click.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -160,13 +161,9 @@ public class MainActivity extends AppCompatActivity {
 //                System.exit(0);
             }
         });
-
-        // run the required methods
-
+        
         //startLocationUpdates();
        // getLastLocation();
-
-        getDeviceLocation();
 
     }
 
@@ -287,9 +284,14 @@ public class MainActivity extends AppCompatActivity {
 //                                    userLocationLongitude = 151.049502; // silverwater test
 //                                    userLocationLatitude = -33.830092;
 
-                                    data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
-                                    getDistanceBetween();
+//                                    userLocationLongitude = 151.1442;  // brighton le sands
+//                                    userLocationLatitude = -33.9627;
 
+
+                                    data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
+
+                                    getDistanceBetween();
+                                    stringConstructor();
                                 }
                                 else{data.setText("location is null");}
                             }
@@ -308,15 +310,10 @@ public class MainActivity extends AppCompatActivity {
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        deviceLng = location.getLongitude();
-        deviceLat = location.getLatitude();
-        // You can now create a LatLng Object for use with maps
-        currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+     //   deviceLng = location.getLongitude();
+      //  deviceLat = location.getLatitude();
         data.setText("Longitute: " + homeLng + "\nLatitude: " + homeLat);
     }
-
-
-
 
     private void getLocationPermission() {
         /*
@@ -377,8 +374,8 @@ public class MainActivity extends AppCompatActivity {
             // store sub 30km stations in a straight line
             if(straightLineDistanceInMeters[0] < 30000){
 
-                possibleDest.add(storedStations[i]);
-                possibleDest.add(storedStations[i+1]);
+                possibleDest.add(storedStations[i]+"");
+                possibleDest.add(storedStations[i+1]+"");
             }
 
             String distanceInStraightLine = Double.toString(distance[i]);
@@ -387,10 +384,42 @@ public class MainActivity extends AppCompatActivity {
             i+=1;
         }
 
-        for (double d : possibleDest) {
-            String stationsWithinRange = Double.toString(d);
-            Log.d("stationsWithinRange", stationsWithinRange); // testing the straight line distances in meters for all stations in syd
+    }
+
+    // create the string of coordinates to be send in the HTTPS request based of the closest stations decided in getDistanceBetween
+
+    private void stringConstructor(){
+
+        int size = 0;
+        int testSize = 0;
+        int i = 0;
+
+        StringBuilder sb = new StringBuilder();
+        size = possibleDest.size();
+        testSize = size-1;
+
+        for (String d : possibleDest) {
+            //String stationsWithinRange = Double.toString(d);
+
+            if(i % 2 == 0){
+                sb.append(d + ",");
+            }
+            else if(i!=testSize){
+
+                sb.append(d + "|");
+            }
+            if(i==testSize) {
+                sb.append(d);
+            }
+
+            i++;
+            Log.d("stationsWithinRange", d); // testing the straight line distances in meters for all stations in syd
+
         }
+        locationsToSend = sb.toString();
+
+        Log.d("locationsToSend", locationsToSend);
+
 
     }
 
