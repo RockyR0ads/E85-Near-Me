@@ -31,8 +31,9 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
    private int location[] = new int[8];
    private static ArrayList<Integer> theLocation = new ArrayList<>();
    public static String goldenAddress = " ";
-   Boolean check = false;
+
    MainActivity MA = new MainActivity();
+
    private WeakReference<Context> contextRef;
 
     public HttpHandler(Context context) {
@@ -57,15 +58,13 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
     @Override
     protected Void doInBackground(Void... voids){
 
+        String locationString = MainActivity.getLocationsToSend();
 
-       ArrayList<String> list = MainActivity.returnList();
-
-        String locationString = MA.locationsToSend;
         try {
 
             URL url = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng +"&destinations=Rydalmere,NSW&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
-            URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=" + list.get(0)+","+list.get(1)+"|"+list.get(2)+","+list.get(3)+"|"+list.get(4)+","+list.get(5)+"|"+list.get(6)+","+list.get(7) + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
+            URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
             URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng +"&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
