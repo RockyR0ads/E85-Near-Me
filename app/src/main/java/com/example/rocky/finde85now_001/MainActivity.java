@@ -53,9 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
     Button click;
 
-    //fix me
-    public static TextView data;
-    public static TextView textView;
+    TextView data;
+    TextView textView;
 
     private LocationRequest mLocationRequest;
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
@@ -68,9 +67,8 @@ public class MainActivity extends AppCompatActivity {
     final static double homeLng = 151.121270;
 
     //Arrays to hold station lists
-    double distance[] = new double[24];
-    double storedStations[] = new double[24];
-
+    double[] distance = new double[24];
+    double[] storedStations = new double[24];
     float[] straightLineDistanceInMeters = new float[1];
 
     private static ArrayList<String> possibleDest = new ArrayList<>();
@@ -132,14 +130,13 @@ public class MainActivity extends AppCompatActivity {
             storedStations[18] = -34.030073; // minto
             storedStations[19] = 150.831892;
 
-            // Caltex Stations
+            storedStations[20] = -33.680160; // Terrey Hills
+            storedStations[21] = 151.225010;
 
-            storedStations[20] = -33.856990; // Drummoyne
-            storedStations[21] = 151.146040;
+        // Caltex Stations
 
-            storedStations[22] = -33.925350; // Tempe
-            storedStations[23] = 151.159680;
-
+            storedStations[22] = -33.856990; // Drummoyne
+            storedStations[23] = 151.146040;
 
 
 
@@ -161,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 //                System.exit(0);
             }
         });
-        
+
         //startLocationUpdates();
        // getLastLocation();
 
@@ -424,22 +421,3 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
-
-/**
- COMPLETED FUNCTIONALITY
- -----------------------------------------------------------------------------------------------------
- - Taking current GPS position of phone and calculating the distance to a fixed location in seconds
- - get a list of stations within 200km and plug them into the URL request
- - get straight line distances from phone to all Syd stations then keep all below 45km
- - Take the Json output of multiple possible destinations and check which is the closest in seconds
- - Store winning stations Coord pos and send the maps request with those coords over to the offical app
-
- ITEMS TO COMPLETE
- ------------------------------------------------------------------------------------------------------
-
- - Compliance for app store listing to be complete
-
-
-
- */
-

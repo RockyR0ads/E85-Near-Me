@@ -26,34 +26,19 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
 
    private String data ="";
    private String dataParsed = "";
-   private String singleParsed = "";
    private int index = 0;
-   private int location[] = new int[8];
    private static ArrayList<Integer> theLocation = new ArrayList<>();
-   public static String goldenAddress = " ";
+   private String goldenAddress = " ";
 
-   MainActivity MA = new MainActivity();
+   private double lat = MainActivity.getUserLocationLatitude();
+   private double lng = MainActivity.getUserLocationLongitude();
 
    private WeakReference<Context> contextRef;
 
-    public HttpHandler(Context context) {
+   public HttpHandler(Context context) {
         contextRef = new WeakReference<>(context);
     }
 
-
-
-
-    public static String getGoldenAddress() {
-        return goldenAddress;
-    }
-
-    public void setGoldenAddress(String goldenAddress) {
-        this.goldenAddress = goldenAddress;
-    }
-
-
-    private double lat = MainActivity.getUserLocationLatitude();
-    private double lng = MainActivity.getUserLocationLongitude();
 
     @Override
     protected Void doInBackground(Void... voids){
@@ -61,8 +46,6 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
         String locationString = MainActivity.getLocationsToSend();
 
         try {
-
-            URL url = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng +"&destinations=Rydalmere,NSW&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
             URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
@@ -141,17 +124,17 @@ public class HttpHandler extends AsyncTask<Void,Void,Void> {
 //                index = 0;
 //              }
 
-            setGoldenAddress(destAddresses.getString(index));
-            singleParsed = "destination address: " + goldenAddress;
+            goldenAddress = (destAddresses.getString(index));
+             String singleParsed = "destination address: " + goldenAddress;
 
                 dataParsed = dataParsed + singleParsed + "\n";
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+        e.printStackTrace();
         } catch (JSONException e) {
-            e.printStackTrace();
+        e.printStackTrace();
         }
 
         return null;
