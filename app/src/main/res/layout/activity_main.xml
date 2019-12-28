@@ -4,25 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#212121"
+    android:background="@color/background"
     tools:context="com.example.rocky.finde85now_001.MainActivity">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Click me!"
-        android:layout_marginBottom="10dp"
-        android:id="@+id/button"
-        />
+
 
 
         <TextView
             android:id="@+id/fetchedData"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_below="@id/button"
-            android:hint="fetched text here"
-            android:textColor="#558B2F"
+            android:hint="Current position"
+            android:textColor="@color/primaryText"
+            android:layout_marginTop="550dp"
             android:padding="5dp"
             android:textSize="24sp" />
 
@@ -32,13 +26,54 @@
             android:layout_width="match_parent"
             android:layout_below="@id/fetchedData"
             android:layout_height="match_parent"
-            android:textColor="#558B2F"
+            android:textColor="#000000"
             android:textSize="50dp"
             android:textStyle="bold"
             android:text="Boo" />
 
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:textSize="30dp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded"
+        android:height="150dp"
+        android:text="FIND CLOSEST E85 STATION" />
 
+    <Button
+        android:id="@+id/stationsNearMe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:textSize="30dp"
 
+        android:layout_below="@id/button"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded"
+        android:height="100dp"
+        android:text="STATIONS NEAR ME" />
+
+    <Button
+        android:id="@+id/firstStation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp"
+        android:layout_below="@id/stationsNearMe"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded"
+        android:height="50dp"
+        android:text=" " />
 
 
 </RelativeLayout>
