@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:hint="Current position"
-            android:textColor="@color/primaryText"
+            android:textColor="@color/secondaryTextColor"
             android:layout_marginTop="550dp"
             android:padding="5dp"
             android:textSize="24sp" />
@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_below="@id/fetchedData"
             android:layout_height="match_parent"
-            android:textColor="#000000"
+            android:textColor="@color/colorPrimary"
             android:textSize="50dp"
             android:textStyle="bold"
             android:text="Boo" />
@@ -69,7 +69,38 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:textSize="15sp"
+        android:visibility="invisible"
         android:layout_below="@id/stationsNearMe"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded"
+        android:height="50dp"
+        android:text=" " />
+
+    <Button
+        android:id="@+id/secondStation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp"
+        android:visibility="invisible"
+        android:layout_below="@id/firstStation"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded"
+        android:height="50dp"
+        android:text=" " />
+
+    <Button
+        android:id="@+id/thirdStation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="300dp"
+        android:visibility="invisible"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp"
+        android:layout_below="@id/secondStation"
         android:textColor="#FFFFFF"
         android:background="@drawable/btn_rounded"
         android:height="50dp"

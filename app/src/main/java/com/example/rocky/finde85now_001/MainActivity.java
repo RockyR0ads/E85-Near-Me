@@ -41,11 +41,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 
-public class MainActivity extends AppCompatActivity implements AsyncResponse{
+public class MainActivity extends AppCompatActivity {
 
 //     HttpHandler asyncTask = new HttpHandler().;
 
@@ -186,10 +188,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         textView = findViewById(R.id.textView);
         stationsNearMe = findViewById(R.id.stationsNearMe);
         firstStation = findViewById(R.id.firstStation);
-//        secondStation = findViewById(R.id.secondStation);
-
+        secondStation = findViewById(R.id.secondStation);
+        thirdStation = findViewById(R.id.thirdStation);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        firstStation.setVisibility(View.INVISIBLE);
+
 
         getDeviceLocation();
 
@@ -480,12 +482,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     }
 
-    @Override
-    public void processFinish(String output) {
-
-    }
-
-
 
     private static class HttpHandler extends AsyncTask<Void,Void,String> {
 
@@ -493,22 +489,21 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         private String dataParsed = "";
         private int index = 0;
         private ArrayList<Integer> theLocation = new ArrayList<>();
-        private String goldenAddress = " ";
 
         private double lat = 0;
         private double lng = 0;
-
-        private Boolean b = MainActivity.getStopMapsLaunching();
-
+        private int firstChoiceNumb, secondChoiceNumb, thirdChoiceNumb;
+        private int checkLowestNumb = 0;
+        private int firstIndex, secondIndex, thirdIndex;
+        private String closestE85Address,secondClosestStation, thirdClosestStation;
         private WeakReference<MainActivity> activityWeakReference;
+
 
 
         // only retain a weak reference to the activity
         HttpHandler(MainActivity context) {
             activityWeakReference = new WeakReference<>(context);
         }
-
-        private String returnedFirstStation = "";
 
         @Override
         protected  void onPreExecute()
@@ -526,8 +521,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             String locationString = MainActivity.getLocationsToSend();
 
             try {
-
-
 
                 URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
@@ -560,28 +553,34 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                 JSONArray destAddresses = JO.getJSONArray("destination_addresses");
                 JSONObject row0 = (JSONObject)rowsArray.get(0);
                 JSONArray elements = row0.getJSONArray("elements");
-                //JSONArray elementsJS = rowsArray.getJSONObject(FIRST_ELEMENT).getJSONArray("elements");
-
-                int closestLocation = 20000; // HARDCODED NUMBER
-
+                
                 for (int i = 0; i < elements.length(); ++i) {
 
                     JSONObject objects = elements.getJSONObject(i);
 
-                    JSONObject durationObject = objects.getJSONObject("duration");
+                    JSONObject durationObject = objects.getJSONObject("duration_in_traffic");
 
                     theLocation.add(durationObject.getInt("value"));
 
-                    if(closestLocation > theLocation.get(i)) {
-                        closestLocation = theLocation.get(i);
-                        index = i;
-                    }
-
                 }
 
-                if(theLocation.get(0) == closestLocation) {
-                    index = 0;
-                }
+                    ArrayList<Integer> theLocationContainer = new ArrayList<>(theLocation);
+
+                    Collections.sort(theLocationContainer);
+
+                    firstChoiceNumb = theLocationContainer.get(0);
+                    secondChoiceNumb = theLocationContainer.get(1);
+                    thirdChoiceNumb = theLocationContainer.get(2);
+
+                    firstIndex = theLocation.indexOf(firstChoiceNumb);
+                    secondIndex = theLocation.indexOf(secondChoiceNumb);
+                    thirdIndex = theLocation.indexOf(thirdChoiceNumb);
+
+                closestE85Address = (destAddresses.getString(firstIndex));
+                secondClosestStation = (destAddresses.getString(secondIndex));
+                thirdClosestStation = (destAddresses.getString(thirdIndex));
+
+
 
                 // OLD HARDCODED IMPLEMENTATION, KEEPING INCASE ABOVE DOESNT WORK CORRECTLY
 
@@ -617,13 +616,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 //                index = 0;
 //              }
 
-                goldenAddress = (destAddresses.getString(index));
-                String singleParsed = "destination address: " + goldenAddress;
-
-                dataParsed = dataParsed + singleParsed + "\n";
-
-
-
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -633,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                 e.printStackTrace();
             }
 
-            return goldenAddress;
+            return closestE85Address;
         }
 
 
@@ -645,7 +637,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             if (output != null && stopMapsLaunching) {
                 super.onPostExecute(output);
 
-                returnedFirstStation = goldenAddress;
 
                 // get a reference to the activity if it is still there
                 MainActivity activity = activityWeakReference.get();
@@ -654,12 +645,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
                 // modify the activity's UI
                 activity.firstStation.setVisibility(View.VISIBLE);
-                activity.firstStation.setText(returnedFirstStation);
-
+                activity.firstStation.setText(closestE85Address);
+                activity.secondStation.setVisibility(View.VISIBLE);
+                activity.secondStation.setText(secondClosestStation);
+                activity.thirdStation.setVisibility(View.VISIBLE);
+                activity.thirdStation.setText(thirdClosestStation);
 
             }
             else{
-                String format = "google.navigation:q=" + goldenAddress; // setup the string to pass
+                String format = "google.navigation:q=" + closestE85Address; // setup the string to pass
 
                 Uri uri = Uri.parse(format); // parse it into a format maps can read
 
