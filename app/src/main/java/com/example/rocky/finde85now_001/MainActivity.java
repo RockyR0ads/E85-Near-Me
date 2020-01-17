@@ -215,9 +215,38 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-              //  firstStation.setVisibility(View.VISIBLE);
+
                 stopMapsLaunching = true;
                 HH.execute();
+
+
+            }
+        });
+
+        firstStation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                launchMaps(HH.closestE85Address);
+
+            }
+        });
+
+        secondStation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                launchMaps(HH.secondClosestStation);
+
+            }
+        });
+
+        thirdStation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                launchMaps(HH.thirdClosestStation);
 
             }
         });
@@ -482,6 +511,19 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void launchMaps(String station){
+
+        String format = "google.navigation:q=" + station; // setup the string to pass
+
+        Uri uri = Uri.parse(format); // parse it into a format maps can read
+
+        Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
+
+        launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
+        launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
+        this.startActivity(launchMap);
+    }
+
 
     private static class HttpHandler extends AsyncTask<Void,Void,String> {
 
@@ -632,47 +674,48 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String output) {
 
-            Context context = activityWeakReference.get();
+            //Context context = activityWeakReference.get();
+            MainActivity activity = activityWeakReference.get();
 
             if (output != null && stopMapsLaunching) {
                 super.onPostExecute(output);
 
 
                 // get a reference to the activity if it is still there
-                MainActivity activity = activityWeakReference.get();
+
 
                 if (activity == null || activity.isFinishing()) return;
 
                 // modify the activity's UI
                 activity.firstStation.setVisibility(View.VISIBLE);
-                activity.firstStation.setText(closestE85Address);
+                String a = closestE85Address.replace(", Australia", "");
+                activity.firstStation.setText(a);
                 activity.secondStation.setVisibility(View.VISIBLE);
-                activity.secondStation.setText(secondClosestStation);
+                String b = secondClosestStation.replace(", Australia", "");
+                activity.secondStation.setText(b);
                 activity.thirdStation.setVisibility(View.VISIBLE);
-                activity.thirdStation.setText(thirdClosestStation);
+                String c = thirdClosestStation.replace(", Australia", "");
+                activity.thirdStation.setText(c);
 
             }
             else{
-                String format = "google.navigation:q=" + closestE85Address; // setup the string to pass
 
-                Uri uri = Uri.parse(format); // parse it into a format maps can read
+                activity.launchMaps(closestE85Address);
 
-                Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
-
-                launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
-                launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
-                context.startActivity(launchMap);
+//                String format = "google.navigation:q=" + closestE85Address; // setup the string to pass
+//
+//                Uri uri = Uri.parse(format); // parse it into a format maps can read
+//
+//                Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
+//
+//                launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
+//                launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
+//                context.startActivity(launchMap);
             }
 
 
         }
 
     }
-
-
-
-
-
-
 
 }
