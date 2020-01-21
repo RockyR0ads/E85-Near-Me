@@ -1,12 +1,14 @@
 package com.example.rocky.finde85now_001;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -15,7 +17,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -41,6 +47,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -48,20 +55,6 @@ import static com.google.android.gms.location.LocationServices.getFusedLocationP
 
 
 public class MainActivity extends AppCompatActivity {
-
-//     HttpHandler asyncTask = new HttpHandler().;
-
-//    AsyncTask<Void,Void,String> asyncTask = new HttpHandler(new HttpHandler.AsyncResponse(){
-//
-//
-//        @Override
-//        public void processFinish(String output){
-//            //Here you will receive the result fired from async class
-//            //of onPostExecute(result) method.
-//
-//            Log.d("testJUAN", output);
-//        }
-//    }).execute();
 
     /*
     ISSUES TO FIX
@@ -77,10 +70,7 @@ public class MainActivity extends AppCompatActivity {
     Button firstStation;
     Button secondStation;
     Button thirdStation;
-
-    String test = "esfesf";
     HttpHandler HH;
-
     TextView data;
     TextView textView;
 
@@ -92,8 +82,11 @@ public class MainActivity extends AppCompatActivity {
     private double userLocationLongitude;
     private double userLocationLatitude;
 
+
+
+    private ProgressBar progressBar;
+
     private static String locationsToSend = "";
-    //private static String rfs = HttpHandler.getReturnedFirstStation();
 
     public static Boolean getStopMapsLaunching() {
         return stopMapsLaunching;
@@ -132,14 +125,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
 
+        HH = new HttpHandler(this);
 
-         HH = new HttpHandler(this);
+
 
             // store all SYDNEY United stations in array
 
@@ -176,10 +172,10 @@ public class MainActivity extends AppCompatActivity {
             storedStations[20] = -33.680160; // Terrey Hills
             storedStations[21] = 151.225010;
 
-        // Caltex Stations
+        // Caltex Station currently removed due to bug
 
-            storedStations[22] = -33.856990; // Drummoyne
-            storedStations[23] = 151.146040;
+//            storedStations[22] = -33.856990; // Drummoyne
+//            storedStations[23] = 151.146040;
 
 
 
@@ -191,9 +187,10 @@ public class MainActivity extends AppCompatActivity {
         secondStation = findViewById(R.id.secondStation);
         thirdStation = findViewById(R.id.thirdStation);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
+        progressBar = findViewById(R.id.progressBar);
 
         getDeviceLocation();
+
 
         // run the HTTP request onClick
         click.setOnClickListener(new View.OnClickListener() {
@@ -204,7 +201,8 @@ public class MainActivity extends AppCompatActivity {
              //   process.execute();
 //                finishAffinity();
 //                System.exit(0);
-
+                startAnimation();
+                progressBar.setVisibility(View.VISIBLE);
                 stopMapsLaunching = false;
                 HH.execute();
             }
@@ -215,11 +213,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-
                 stopMapsLaunching = true;
+                progressBar.setVisibility(View.VISIBLE);
+                startAnimation();
                 HH.execute();
-
-
             }
         });
 
@@ -236,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-
                 launchMaps(HH.secondClosestStation);
 
             }
@@ -251,6 +247,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void startAnimation(){
+
+        ObjectAnimator progressAnimator = ObjectAnimator.ofInt(progressBar, "progress", 0, 1000);
+        progressAnimator.setDuration(700);
+        progressAnimator.setInterpolator(new AccelerateInterpolator());
+        progressAnimator.start();
     }
 
     protected void startLocationUpdates() {
@@ -460,7 +464,7 @@ public class MainActivity extends AppCompatActivity {
             distance[i] = straightLineDistanceInMeters[0];
 
             // store sub 30km stations in a straight line
-            if(straightLineDistanceInMeters[0] < 9000){
+            if(straightLineDistanceInMeters[0] < 30000){
 
                 possibleDest.add(storedStations[i]+"");
                 possibleDest.add(storedStations[i+1]+"");
@@ -525,21 +529,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private static class HttpHandler extends AsyncTask<Void,Void,String> {
+    private static class HttpHandler extends AsyncTask<Void, Integer, String> {
 
         private String data ="";
-        private String dataParsed = "";
-        private int index = 0;
         private ArrayList<Integer> theLocation = new ArrayList<>();
+        private ArrayList<String> locationStringList = new ArrayList<>();
 
+        private int count = 0;
         private double lat = 0;
         private double lng = 0;
         private int firstChoiceNumb, secondChoiceNumb, thirdChoiceNumb;
-        private int checkLowestNumb = 0;
         private int firstIndex, secondIndex, thirdIndex;
         private String closestE85Address,secondClosestStation, thirdClosestStation;
         private WeakReference<MainActivity> activityWeakReference;
-
 
 
         // only retain a weak reference to the activity
@@ -558,57 +560,74 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected String doInBackground(Void... voids){
+        protected String doInBackground(Void... voids) {
 
             String locationString = MainActivity.getLocationsToSend();
 
-            try {
 
-                URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
-                URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng +"&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
+                try {
 
-                HttpURLConnection httpURLConnection = (HttpURLConnection) testingParsedDestination.openConnection();
-                InputStream inputStream = httpURLConnection.getInputStream();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                String line = "";
+                   // publishProgress(count);
 
-                while(line != null){
-                    line = bufferedReader.readLine();
-                    data = data + line;
-                }
+                    URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
-                //Parse the data in a readable manner
+                    URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
-                JSONObject JO = new JSONObject(data);
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) testingParsedDestination.openConnection();
+                    InputStream inputStream = httpURLConnection.getInputStream();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    String line = "";
 
-                String checkRequest = JO.getString("status");
+                    while (line != null) {
+                        line = bufferedReader.readLine();
+                        data = data + line;
+                    }
 
-                Log.d("checkInvalidLog", "Checking INVALID REQUEST");
+                    //Parse the data in a readable manner
 
-                if(checkRequest.equals("INVALID_REQUEST")) {
-                    Log.d("checkInvalidLog1", "INVALID REQUEST");
-                    return "TEST";
-                }
+                    JSONObject JO = new JSONObject(data);
 
-                JSONArray rowsArray = JO.getJSONArray("rows");
-                JSONArray destAddresses = JO.getJSONArray("destination_addresses");
-                JSONObject row0 = (JSONObject)rowsArray.get(0);
-                JSONArray elements = row0.getJSONArray("elements");
-                
-                for (int i = 0; i < elements.length(); ++i) {
+                    String checkRequest = JO.getString("status");
 
-                    JSONObject objects = elements.getJSONObject(i);
+                    Log.d("checkInvalidLog", "Checking INVALID REQUEST");
 
-                    JSONObject durationObject = objects.getJSONObject("duration_in_traffic");
+                    if (checkRequest.equals("INVALID_REQUEST")) {
+                        Log.d("checkInvalidLog1", "INVALID REQUEST");
+                        return "TEST";
+                    }
 
-                    theLocation.add(durationObject.getInt("value"));
+                    JSONArray rowsArray = JO.getJSONArray("rows");
+                    JSONArray destAddresses = JO.getJSONArray("destination_addresses");
+                    JSONObject row0 = (JSONObject) rowsArray.get(0);
+                    JSONArray elements = row0.getJSONArray("elements");
 
-                }
+                    int[][] stationsAndTheirDuration = new int[elements.length()][2];
+
+                    for (int i = 0; i < elements.length(); ++i) {
+
+                        JSONObject objects = elements.getJSONObject(i);
+
+                        JSONObject durationObject = objects.getJSONObject("duration_in_traffic");
+
+                        theLocation.add(durationObject.getInt("value"));
+                        locationStringList.add(destAddresses.getString(i));
+
+                        // Append 2D array
+                        stationsAndTheirDuration[i][0] = theLocation.get(i);
+                        stationsAndTheirDuration[i][1] = i;
+
+                    }
+
 
                     ArrayList<Integer> theLocationContainer = new ArrayList<>(theLocation);
 
+                    for (String d : locationStringList) {
+                        Log.d("checkDestinationStrings", d);
+                    }
+
                     Collections.sort(theLocationContainer);
+
 
                     firstChoiceNumb = theLocationContainer.get(0);
                     secondChoiceNumb = theLocationContainer.get(1);
@@ -618,54 +637,19 @@ public class MainActivity extends AppCompatActivity {
                     secondIndex = theLocation.indexOf(secondChoiceNumb);
                     thirdIndex = theLocation.indexOf(thirdChoiceNumb);
 
-                closestE85Address = (destAddresses.getString(firstIndex));
-                secondClosestStation = (destAddresses.getString(secondIndex));
-                thirdClosestStation = (destAddresses.getString(thirdIndex));
+                    closestE85Address = (destAddresses.getString(firstIndex));
+                    secondClosestStation = (destAddresses.getString(secondIndex));
+                    thirdClosestStation = (destAddresses.getString(thirdIndex));
 
 
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
-                // OLD HARDCODED IMPLEMENTATION, KEEPING INCASE ABOVE DOESNT WORK CORRECTLY
-
-//                JSONObject element1 = elements.getJSONObject(1);
-//                JSONObject element2 = elements.getJSONObject(2);
-//                JSONObject element3 = elements.getJSONObject(3);
-//
-//
-//            JSONObject durationObject0 = element0.getJSONObject("duration_in_traffic");
-//            JSONObject durationObject1 = element1.getJSONObject("duration_in_traffic");
-//            JSONObject durationObject2 = element2.getJSONObject("duration_in_traffic");
-//            JSONObject durationObject3 = element3.getJSONObject("duration_in_traffic");
-//
-//
-//            location[0] = durationObject0.getInt("value");
-//            location[1] = durationObject1.getInt("value");
-//            location[2] = durationObject2.getInt("value");
-//            location[3] = durationObject3.getInt("value");
-
-
-                // compare elements then take the element which wins and use the number to get the address
-
-                // int closestLocation = location[0];
-
-//          for(int i = 1; i <= 4; i++){
-//
-//              if(closestLocation > location[i]) {
-//                  closestLocation = location[i];
-//                  index = i;
-//              }
-//         }
-//              if(location[0] == closestLocation) {
-//                index = 0;
-//              }
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
             return closestE85Address;
         }
@@ -674,47 +658,40 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String output) {
 
-            //Context context = activityWeakReference.get();
             MainActivity activity = activityWeakReference.get();
+            activity.progressBar.setVisibility(View.GONE);
 
             if (output != null && stopMapsLaunching) {
                 super.onPostExecute(output);
 
 
-                // get a reference to the activity if it is still there
 
-
-                if (activity == null || activity.isFinishing()) return;
 
                 // modify the activity's UI
                 activity.firstStation.setVisibility(View.VISIBLE);
-                String a = closestE85Address.replace(", Australia", "");
-                activity.firstStation.setText(a);
+                activity.firstStation.setText(closestE85Address.replace(", Australia", ""));
                 activity.secondStation.setVisibility(View.VISIBLE);
-                String b = secondClosestStation.replace(", Australia", "");
-                activity.secondStation.setText(b);
+                activity.secondStation.setText(secondClosestStation.replace(", Australia", ""));
                 activity.thirdStation.setVisibility(View.VISIBLE);
-                String c = thirdClosestStation.replace(", Australia", "");
-                activity.thirdStation.setText(c);
+                activity.thirdStation.setText(thirdClosestStation.replace(", Australia", ""));
 
             }
             else{
 
                 activity.launchMaps(closestE85Address);
 
-//                String format = "google.navigation:q=" + closestE85Address; // setup the string to pass
-//
-//                Uri uri = Uri.parse(format); // parse it into a format maps can read
-//
-//                Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
-//
-//                launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
-//                launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
-//                context.startActivity(launchMap);
             }
 
 
         }
+
+//        @Override
+//        protected void onProgressUpdate(Integer... values) {
+//           // txt.setText("Running..."+ values[0]);
+//            MainActivity activity = activityWeakReference.get();
+//            activity.progressBar.setProgress(values[0]);
+//
+//        }
 
     }
 
