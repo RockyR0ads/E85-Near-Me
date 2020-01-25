@@ -46,10 +46,15 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
@@ -97,10 +102,17 @@ public class MainActivity extends AppCompatActivity {
     final static double homeLat = -33.926360;
     final static double homeLng = 151.121270;
 
+    SimpleDateFormat formatter1 = new SimpleDateFormat("HH/mm/ss");
+
+    Date timeA;
+    Date timeB;
+
     //Arrays to hold station lists
     double[] distance = new double[24];
-    double[] storedStations = new double[24];
+    double[] storedStations = new double[22];
     float[] straightLineDistanceInMeters = new float[1];
+    double [][] stations = new double[11][3];
+    boolean[] checkIfStationIsOpen = new boolean[11];
 
     private static ArrayList<String> possibleDest = new ArrayList<>();
 
@@ -135,12 +147,11 @@ public class MainActivity extends AppCompatActivity {
 
         HH = new HttpHandler(this);
 
-
-
             // store all SYDNEY United stations in array
 
             storedStations[0] = -33.649917; // vineyard
             storedStations[1] = 150.862685;
+            checkIfStationIsOpen[0] = false;
 
             storedStations[2] = -33.901877; // yagoona
             storedStations[3] = 151.037178;
@@ -177,7 +188,14 @@ public class MainActivity extends AppCompatActivity {
 //            storedStations[22] = -33.856990; // Drummoyne
 //            storedStations[23] = 151.146040;
 
+        for (int i = 0; i < storedStations.length/2; ++i) {
 
+            // Append 2D array
+            stations[i][0] = storedStations[i] ;
+            stations[i][1] = storedStations[i+1];
+            
+
+        }
 
         click = findViewById(R.id.button);
         data = findViewById(R.id.fetchedData);
@@ -190,6 +208,12 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
 
         getDeviceLocation();
+
+        String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+
+
+        Log.d("theCurrentTime", currentTime);
+
 
 
         // run the HTTP request onClick
@@ -248,6 +272,35 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+    private boolean isNowBetweenDateTime(final Date s, final Date e)
+    {
+
+        Date formattedDate = new Date();
+
+        String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+
+        try {
+            formattedDate = formatter1.parse(currentTime);
+        } catch (ParseException ex) {
+            ex.printStackTrace();
+        }
+        return formattedDate.after(s) && formattedDate.before(e);
+    }
+
+    private void createDateRange(String a, String b)
+    {
+        try {
+            timeA = formatter1.parse(a);
+            timeB = formatter1.parse(b);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        isNowBetweenDateTime(timeA, timeB);
+
+    }
+
 
     private void startAnimation(){
 
