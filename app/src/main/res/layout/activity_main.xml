@@ -104,6 +104,7 @@
         android:text=" " />
 
     <ProgressBar
+
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="wrap_content"

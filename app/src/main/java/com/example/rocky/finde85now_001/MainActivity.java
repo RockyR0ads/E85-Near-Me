@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -46,6 +47,7 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,6 +56,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
@@ -87,8 +90,6 @@ public class MainActivity extends AppCompatActivity {
     private double userLocationLongitude;
     private double userLocationLatitude;
 
-
-
     private ProgressBar progressBar;
 
     private static String locationsToSend = "";
@@ -102,29 +103,21 @@ public class MainActivity extends AppCompatActivity {
     final static double homeLat = -33.926360;
     final static double homeLng = 151.121270;
 
-    SimpleDateFormat formatter1 = new SimpleDateFormat("HH/mm/ss");
-
-    Date timeA;
-    Date timeB;
+    DateFormat dateFormatter = new SimpleDateFormat("kk:mm", Locale.ENGLISH);
 
     //Arrays to hold station lists
     double[] distance = new double[24];
     double[] storedStations = new double[22];
     float[] straightLineDistanceInMeters = new float[1];
-    double [][] stations = new double[11][3];
     boolean[] checkIfStationIsOpen = new boolean[11];
 
-    private static ArrayList<String> possibleDest = new ArrayList<>();
+    private ArrayList<String> possibleDest = new ArrayList<>();
+    private ArrayList<Station> stations = new ArrayList<>();
 
     //GETTERS & SETTERS
 
     public static String getLocationsToSend() {
         return locationsToSend;
-    }
-
-    public static ArrayList<String> returnList(){
-
-        return (possibleDest);
     }
 
     public double getUserLocationLatitude() {
@@ -136,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         return userLocationLongitude;
     }
 
-
+    Station vineyard = new Station(-33.649917,150.862685,530,2130);
 
 
     @Override
@@ -146,6 +139,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         HH = new HttpHandler(this);
+
+        stations.add(vineyard);
+        stations.add(new Station (-33.810202,151.032491,600,2200));
+
+        //Testing if my class works
+        String s = String.valueOf(vineyard.getClosingTime());
+        vineyard.setFullAddress("1540 Windsor Road, Vineyard, NSW 2765, Australia");
+        Log.d("VineyardCloseTime", s); // result = 2130 (SUCCESS)
+
 
             // store all SYDNEY United stations in array
 
@@ -188,14 +190,7 @@ public class MainActivity extends AppCompatActivity {
 //            storedStations[22] = -33.856990; // Drummoyne
 //            storedStations[23] = 151.146040;
 
-        for (int i = 0; i < storedStations.length/2; ++i) {
-
-            // Append 2D array
-            stations[i][0] = storedStations[i] ;
-            stations[i][1] = storedStations[i+1];
-            
-
-        }
+       // createDateRange(dateTest1 , dateTest2);
 
         click = findViewById(R.id.button);
         data = findViewById(R.id.fetchedData);
@@ -209,30 +204,20 @@ public class MainActivity extends AppCompatActivity {
 
         getDeviceLocation();
 
-        String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
-
-        Log.d("theCurrentTime", currentTime);
-
-
-
-        // run the HTTP request onClick
+        // FIND CLOSEST STATION
         click.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-               // HttpHandler process = new HttpHandler(getApplicationContext());
-             //   process.execute();
-//                finishAffinity();
-//                System.exit(0);
-                startAnimation();
-                progressBar.setVisibility(View.VISIBLE);
                 stopMapsLaunching = false;
                 HH.execute();
+                finish();
+
             }
         });
 
-        // click functionally
+        // FIND STATIONS NEAR ME
         stationsNearMe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -241,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.VISIBLE);
                 startAnimation();
                 HH.execute();
+
             }
         });
 
@@ -273,34 +259,23 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private boolean isNowBetweenDateTime(final Date s, final Date e)
+    private boolean isNowBetweenDateTime(int opening, int closing)
     {
+        String currentTime;
+        int timeNow;
 
-        Date formattedDate = new Date();
+        //get current user time
+        currentTime = new SimpleDateFormat("kk:mm", Locale.getDefault()).format(new Date());
+        Log.d("theCurrentTime", currentTime); // check if its working
+        timeNow = Integer.valueOf(currentTime);
 
-        String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-
-        try {
-            formattedDate = formatter1.parse(currentTime);
-        } catch (ParseException ex) {
-            ex.printStackTrace();
-        }
-        return formattedDate.after(s) && formattedDate.before(e);
-    }
-
-    private void createDateRange(String a, String b)
-    {
-        try {
-            timeA = formatter1.parse(a);
-            timeB = formatter1.parse(b);
-        } catch (ParseException e) {
-            e.printStackTrace();
+        if (timeNow > opening && timeNow < closing) {
+            return false;
+        } else {
+            return false;
         }
 
-        isNowBetweenDateTime(timeA, timeB);
-
     }
-
 
     private void startAnimation(){
 
@@ -421,8 +396,8 @@ public class MainActivity extends AppCompatActivity {
                                 if (location != null) {
                                     // Logic to handle location object
 
-                                    userLocationLongitude = location.getLongitude();
-                                    userLocationLatitude = location.getLatitude();
+                                   // userLocationLongitude = location.getLongitude();
+                                   // userLocationLatitude = location.getLatitude();
 
 //                                    userLocationLongitude = 151.049502; // silverwater test
 //                                    userLocationLatitude = -33.830092;
@@ -432,6 +407,9 @@ public class MainActivity extends AppCompatActivity {
 
 //                                    userLocationLatitude = -33.867970;
 //                                    userLocationLongitude = 151.128870;  // five dock
+
+                                      userLocationLatitude = -33.653588;
+                                    userLocationLongitude = 150.868142;  // vineyard
 
                                     data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
 
@@ -570,15 +548,29 @@ public class MainActivity extends AppCompatActivity {
 
     private void launchMaps(String station){
 
-        String format = "google.navigation:q=" + station; // setup the string to pass
 
-        Uri uri = Uri.parse(format); // parse it into a format maps can read
+        boolean isIntentSafe = true;
 
-        Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
+        if(isIntentSafe) {
 
-        launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
-        launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
-        this.startActivity(launchMap);
+            String format = "google.navigation:q=" + station; // setup the string to pass
+
+            Uri uri = Uri.parse(format); // parse it into a format maps can read
+
+            Intent launchMap = new Intent(Intent.ACTION_VIEW, uri);
+
+
+            launchMap.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // do i need this?
+          //  launchMap.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
+            this.startActivity(launchMap);
+
+        }
+        else{
+            // error message here
+        }
+
+
     }
 
 
@@ -594,6 +586,7 @@ public class MainActivity extends AppCompatActivity {
         private int firstChoiceNumb, secondChoiceNumb, thirdChoiceNumb;
         private int firstIndex, secondIndex, thirdIndex;
         private String closestE85Address,secondClosestStation, thirdClosestStation;
+        private String suburb;
         private WeakReference<MainActivity> activityWeakReference;
 
 
@@ -695,6 +688,7 @@ public class MainActivity extends AppCompatActivity {
                     thirdClosestStation = (destAddresses.getString(thirdIndex));
 
 
+
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -717,9 +711,6 @@ public class MainActivity extends AppCompatActivity {
             if (output != null && stopMapsLaunching) {
                 super.onPostExecute(output);
 
-
-
-
                 // modify the activity's UI
                 activity.firstStation.setVisibility(View.VISIBLE);
                 activity.firstStation.setText(closestE85Address.replace(", Australia", ""));
@@ -728,10 +719,21 @@ public class MainActivity extends AppCompatActivity {
                 activity.thirdStation.setVisibility(View.VISIBLE);
                 activity.thirdStation.setText(thirdClosestStation.replace(", Australia", ""));
 
+
             }
             else{
 
+                // take only the suburb from the output
+                int i = closestE85Address.indexOf(',');
+                String rest = closestE85Address.substring(i+2);
+                int d = rest.indexOf(" ");
+                suburb = rest.substring(0, d);
+                Log.d("stringSplitter", suburb); // check if it works
+
+
+
                 activity.launchMaps(closestE85Address);
+
 
             }
 
