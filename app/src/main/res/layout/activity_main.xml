@@ -7,10 +7,7 @@
     android:background="@color/background"
     tools:context="com.example.rocky.finde85now_001.MainActivity">
 
-
-
-
-        <TextView
+     <TextView
             android:id="@+id/fetchedData"
             android:layout_width="match_parent"
             android:layout_height="60dp"
@@ -106,5 +103,31 @@
         android:height="50dp"
         android:text=" " />
 
+    <ProgressBar
+
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:indeterminate="false"
+        android:max="1000"
+        android:visibility="invisible"
+        android:layout_below="@id/stationsNearMe"
+        android:minHeight="100dp"
+        android:minWidth="300dp"
+         />
+
+    <TextView
+        android:id="@+id/errorBoi"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/thirdStation"
+        android:textAlignment="center"
+        android:textColor="#f44336"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:text=" " />
 
 </RelativeLayout>
