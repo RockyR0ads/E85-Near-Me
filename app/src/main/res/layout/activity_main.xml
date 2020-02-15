@@ -119,4 +119,15 @@
         android:minWidth="300dp"
          />
 
+    <TextView
+        android:id="@+id/errorBoi"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/thirdStation"
+        android:textAlignment="center"
+        android:textColor="#f44336"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:text=" " />
+
 </RelativeLayout>

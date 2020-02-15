@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     HttpHandler HH;
     TextView data;
     TextView textView;
+    TextView errorCheck;
 
     private LocationRequest mLocationRequest;
 
@@ -129,8 +130,6 @@ public class MainActivity extends AppCompatActivity {
         return userLocationLongitude;
     }
 
-    Station vineyard = new Station(-33.649917,150.862685,530,2130);
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,12 +139,14 @@ public class MainActivity extends AppCompatActivity {
 
         HH = new HttpHandler(this);
 
-        stations.add(vineyard);
-        stations.add(new Station (-33.810202,151.032491,600,2200));
+
+        stations.add(new Station(-33.649917,150.862685,530,2130, "Vineyard", false));
+        stations.add(new Station (-33.810202,151.032491,600,2200, "Rydalmere",false));
+        stations.add(new Station (-33.861967,151.167653,0,2400, "Rozelle",true));
 
         //Testing if my class works
-        String s = String.valueOf(vineyard.getClosingTime());
-        vineyard.setFullAddress("1540 Windsor Road, Vineyard, NSW 2765, Australia");
+        String s = String.valueOf(stations.get(0).getClosingTime());
+        stations.get(0).setFullAddress("1540 Windsor Road, Vineyard, NSW 2765, Australia");
         Log.d("VineyardCloseTime", s); // result = 2130 (SUCCESS)
 
 
@@ -190,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
 //            storedStations[22] = -33.856990; // Drummoyne
 //            storedStations[23] = 151.146040;
 
-       // createDateRange(dateTest1 , dateTest2);
 
         click = findViewById(R.id.button);
         data = findViewById(R.id.fetchedData);
@@ -201,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
         thirdStation = findViewById(R.id.thirdStation);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         progressBar = findViewById(R.id.progressBar);
+        errorCheck = findViewById(R.id.errorBoi);
 
         getDeviceLocation();
 
@@ -212,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
 
                 stopMapsLaunching = false;
                 HH.execute();
-                finish();
+               // finish();
 
             }
         });
@@ -259,22 +260,25 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private boolean isNowBetweenDateTime(int opening, int closing)
+    private boolean isTheStationOpen(int opening, int closing)
     {
         String currentTime;
         int timeNow;
+        Boolean check = false;
 
         //get current user time
         currentTime = new SimpleDateFormat("kk:mm", Locale.getDefault()).format(new Date());
         Log.d("theCurrentTime", currentTime); // check if its working
+
+        currentTime = toMins(currentTime);
+
         timeNow = Integer.valueOf(currentTime);
 
         if (timeNow > opening && timeNow < closing) {
-            return false;
-        } else {
-            return false;
-        }
 
+            check = true;
+        }
+            return check;
     }
 
     private void startAnimation(){
@@ -573,6 +577,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private String toMins(String s) {
+
+        String formatedHourString = s.replaceFirst(":", "");
+
+        return formatedHourString;
+    }
 
     private static class HttpHandler extends AsyncTask<Void, Integer, String> {
 
@@ -720,20 +730,46 @@ public class MainActivity extends AppCompatActivity {
                 activity.thirdStation.setText(thirdClosestStation.replace(", Australia", ""));
 
 
-            }
-            else{
+            } else {
+
+                int open = 0;
+                int closed = 0;
 
                 // take only the suburb from the output
-                int i = closestE85Address.indexOf(',');
-                String rest = closestE85Address.substring(i+2);
+                count = closestE85Address.indexOf(',');
+                String rest = closestE85Address.substring(count + 2);
                 int d = rest.indexOf(" ");
                 suburb = rest.substring(0, d);
                 Log.d("stringSplitter", suburb); // check if it works
 
+                for (int i = 0; i < activity.stations.size(); ) {
 
+                    String stationSuburb = activity.stations.get(i).getSuburb();
 
-                activity.launchMaps(closestE85Address);
+                    if (suburb.equals(stationSuburb)) { // stations match! grab the opening times
 
+                        open = activity.stations.get(i).getOpeningTime();
+                        closed = activity.stations.get(i).getClosingTime();
+                       break;
+
+                    } else {
+                        i++;
+                    }
+
+                }
+
+                if (activity.isTheStationOpen(open, closed)) {
+
+                    // station is open send the user to maps
+                    activity.launchMaps(closestE85Address);
+                    activity.finish();
+
+                } else { // station is closed
+
+                    activity.errorCheck.setText("Station is not open Go EAT ASS");
+                }
+
+               // activity.launchMaps(closestE85Address);
 
             }
 

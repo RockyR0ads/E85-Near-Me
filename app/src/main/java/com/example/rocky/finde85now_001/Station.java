@@ -8,16 +8,20 @@ public class Station {
     private int openingTime;
     private int closingTime;
 
+    private  final boolean twentyFourHour;
+
+    private String suburb;
     private String fullAddress;
 
     //constructor
-    public Station(double latitude, double longitude, int opens, int closes){
+    public Station(double latitude, double longitude, int openingTime, int closingTime, String suburb, Boolean twentyFourHour){
 
         this.latitude = latitude;
         this.longitude = longitude;
-        this.openingTime = opens;
-        this.closingTime = closes;
-
+        this.openingTime = openingTime;
+        this.closingTime = closingTime;
+        this.suburb = suburb;
+        this.twentyFourHour = twentyFourHour;
     }
 
     //Methods
@@ -79,6 +83,18 @@ public class Station {
     public String getFullAddress(){
 
         return fullAddress;
+
+    }
+
+    public void setSuburb(String suburb){
+
+        this.suburb = suburb;
+
+    }
+
+    public String getSuburb(){
+
+        return suburb;
 
     }
 
