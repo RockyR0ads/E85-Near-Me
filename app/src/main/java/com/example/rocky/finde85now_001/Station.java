@@ -8,7 +8,7 @@ public class Station {
     private int openingTime;
     private int closingTime;
 
-    private  final boolean twentyFourHour;
+    private boolean twentyFourHour;
 
     private String suburb;
     private String fullAddress;
