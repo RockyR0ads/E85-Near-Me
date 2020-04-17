@@ -2,25 +2,24 @@ package com.example.rocky.finde85now_001;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -48,15 +47,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
@@ -82,6 +76,11 @@ public class MainActivity extends AppCompatActivity {
     TextView data;
     TextView textView;
     TextView errorCheck;
+    TextView stateWatch;
+
+    private ArrayList<Integer> theLocation = new ArrayList<>();
+
+    private String closestE85Address,secondClosestStation, thirdClosestStation;
 
     private LocationRequest mLocationRequest;
 
@@ -95,11 +94,12 @@ public class MainActivity extends AppCompatActivity {
 
     private static String locationsToSend = "";
 
-    public static Boolean getStopMapsLaunching() {
-        return stopMapsLaunching;
-    }
+//    public static Boolean getStopMapsLaunching() {
+//        return stopMapsLaunching;
+//    }
 
     private static Boolean stopMapsLaunching = false;
+    private Boolean provideStationOptions = false;
 
     final static double homeLat = -33.926360;
     final static double homeLng = 151.121270;
@@ -110,9 +110,9 @@ public class MainActivity extends AppCompatActivity {
     double[] distance = new double[24];
     double[] storedStations = new double[22];
     float[] straightLineDistanceInMeters = new float[1];
-    boolean[] checkIfStationIsOpen = new boolean[11];
 
-    private ArrayList<String> possibleDest = new ArrayList<>();
+    private ArrayList<String> shortlistedDestinations = new ArrayList<>();
+    private ArrayList<Station> shortlistedDestinations1 = new ArrayList<>();
     private ArrayList<Station> stations = new ArrayList<>();
 
     //GETTERS & SETTERS
@@ -137,12 +137,34 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        click = findViewById(R.id.button);
+        data = findViewById(R.id.fetchedData);
+        textView = findViewById(R.id.textView);
+        stationsNearMe = findViewById(R.id.stationsNearMe);
+        firstStation = findViewById(R.id.firstStation);
+        secondStation = findViewById(R.id.secondStation);
+        thirdStation = findViewById(R.id.thirdStation);
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        progressBar = findViewById(R.id.progressBar);
+        errorCheck = findViewById(R.id.errorBoi);
+        stateWatch = findViewById(R.id.state);
+
+
         HH = new HttpHandler(this);
 
+        stateWatch.setText(this.getLifecycle().getCurrentState().toString());
 
-        stations.add(new Station(-33.649917,150.862685,530,2130, "Vineyard", false));
+        stations.add(new Station (-33.649917,150.862685,530,2130, "Vineyard", false));
         stations.add(new Station (-33.810202,151.032491,600,2200, "Rydalmere",false));
         stations.add(new Station (-33.861967,151.167653,0,2400, "Rozelle",true));
+        stations.add(new Station (-33.901910,151.208229,0,2400, "Waterloo",true));
+        stations.add(new Station (-33.901877,151.037178,500,2400, "Yagoona",false));
+        stations.add(new Station (-33.755790,151.282715,500,2400, "Dee Why",false));
+        stations.add(new Station (-33.746039,150.622454,600,2100, "Blaxland",false));
+        stations.add(new Station (-33.899258,151.036924,600,2200, "Yagoona1",false));
+        stations.add(new Station (-33.872234,150.900077,600,2200, "Prairiewood",false));
+        stations.add(new Station (-34.030073,150.831892,0,2400, "Minto",true));
+        stations.add(new Station (-33.680160,151.225010,700,2200, "Terrey Hills",false));
 
         //Testing if my class works
         String s = String.valueOf(stations.get(0).getClosingTime());
@@ -154,9 +176,8 @@ public class MainActivity extends AppCompatActivity {
 
             storedStations[0] = -33.649917; // vineyard
             storedStations[1] = 150.862685;
-            checkIfStationIsOpen[0] = false;
 
-            storedStations[2] = -33.901877; // yagoona
+            storedStations[2] = -33.901877; // yagoona45
             storedStations[3] = 151.037178;
 
             storedStations[4] = -33.810202; // rydalmere
@@ -192,19 +213,11 @@ public class MainActivity extends AppCompatActivity {
 //            storedStations[23] = 151.146040;
 
 
-        click = findViewById(R.id.button);
-        data = findViewById(R.id.fetchedData);
-        textView = findViewById(R.id.textView);
-        stationsNearMe = findViewById(R.id.stationsNearMe);
-        firstStation = findViewById(R.id.firstStation);
-        secondStation = findViewById(R.id.secondStation);
-        thirdStation = findViewById(R.id.thirdStation);
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        progressBar = findViewById(R.id.progressBar);
-        errorCheck = findViewById(R.id.errorBoi);
+
 
         getDeviceLocation();
 
+        this.stateWatch.setText(this.getLifecycle().getCurrentState().toString());
 
         // FIND CLOSEST STATION
         click.setOnClickListener(new View.OnClickListener() {
@@ -225,8 +238,9 @@ public class MainActivity extends AppCompatActivity {
 
                 stopMapsLaunching = true;
                 progressBar.setVisibility(View.VISIBLE);
-                startAnimation();
+                animateProgressBar();
                 HH.execute();
+
 
             }
         });
@@ -235,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                launchMaps(HH.closestE85Address);
+                launchMaps(closestE85Address);
 
             }
         });
@@ -244,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                launchMaps(HH.secondClosestStation);
+                launchMaps(secondClosestStation);
 
             }
         });
@@ -253,10 +267,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                launchMaps(HH.thirdClosestStation);
+                launchMaps(thirdClosestStation);
 
             }
         });
+
+
 
     }
 
@@ -264,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
     {
         String currentTime;
         int timeNow;
-        Boolean check = false;
+        boolean check = false;
 
         //get current user time
         currentTime = new SimpleDateFormat("kk:mm", Locale.getDefault()).format(new Date());
@@ -274,6 +290,8 @@ public class MainActivity extends AppCompatActivity {
 
         timeNow = Integer.valueOf(currentTime);
 
+        //timeNow = 400; // testing for time outside of opening hours
+
         if (timeNow > opening && timeNow < closing) {
 
             check = true;
@@ -281,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
             return check;
     }
 
-    private void startAnimation(){
+    private void animateProgressBar(){
 
         ObjectAnimator progressAnimator = ObjectAnimator.ofInt(progressBar, "progress", 0, 1000);
         progressAnimator.setDuration(700);
@@ -400,11 +418,14 @@ public class MainActivity extends AppCompatActivity {
                                 if (location != null) {
                                     // Logic to handle location object
 
-                                   // userLocationLongitude = location.getLongitude();
-                                   // userLocationLatitude = location.getLatitude();
+                                    userLocationLongitude = location.getLongitude();
+                                    userLocationLatitude = location.getLatitude();
 
 //                                    userLocationLongitude = 151.049502; // silverwater test
-//                                    userLocationLatitude = -33.830092;
+////                                  userLocationLatitude = -33.830092;
+//
+//                                    userLocationLongitude = 151.277790; // Dee Why
+//                                    userLocationLatitude = -33.764022;
 
 //                                    userLocationLongitude = 151.1442;  // brighton le sands
 //                                    userLocationLatitude = -33.9627;
@@ -412,10 +433,10 @@ public class MainActivity extends AppCompatActivity {
 //                                    userLocationLatitude = -33.867970;
 //                                    userLocationLongitude = 151.128870;  // five dock
 
-                                      userLocationLatitude = -33.653588;
-                                    userLocationLongitude = 150.868142;  // vineyard
+//                                    userLocationLatitude = -33.653588;
+//                                    userLocationLongitude = 150.868142;  // vineyard
 
-                                    data.setText("Longitute: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
+                                    data.setText("Longitude: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
 
                                     getDistanceBetween();
                                     stringConstructor();
@@ -490,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // call this once the device pos has been received
-    private void getDistanceBetween() {
+    private void getDistanceBetweenOld() {
 
         for(int i = 0; i < storedStations.length; i++ ){
 
@@ -501,8 +522,8 @@ public class MainActivity extends AppCompatActivity {
             // store sub 30km stations in a straight line
             if(straightLineDistanceInMeters[0] < 30000){
 
-                possibleDest.add(storedStations[i]+"");
-                possibleDest.add(storedStations[i+1]+"");
+                shortlistedDestinations.add(storedStations[i]+"");
+                shortlistedDestinations.add(storedStations[i+1]+"");
             }
 
             String distanceInStraightLine = Double.toString(distance[i]);
@@ -512,20 +533,43 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+        // parallel method trying to get same result using station class instead of hard coded array
+
+    private void getDistanceBetween() {
+
+        for(int i = 0; i < stations.size(); i++ ){
+
+            Location.distanceBetween(stations.get(i).getLatitude(), stations.get(i).getLongitude(), userLocationLatitude, userLocationLongitude, straightLineDistanceInMeters);
+
+            distance[i] = straightLineDistanceInMeters[0];
+
+            // store sub 30km stations in a straight line
+            if(straightLineDistanceInMeters[0] < 30000){
+
+                shortlistedDestinations1.add(stations.get(i));
+
+            }
+
+            String distanceInStraightLine = Double.toString(distance[i]);
+            Log.d("distanceInStraightLine", distanceInStraightLine);
+
+        }
+
+    }
 
     // create the string of coordinates to be send in the HTTPS request based of the closest stations decided in getDistanceBetween
 
-    private void stringConstructor(){
+    private void stringConstructorOld(){
 
-        int size = 0;
-        int testSize = 0;
+        int size;
+        int testSize;
         int i = 0;
 
         StringBuilder sb = new StringBuilder();
-        size = possibleDest.size();
+        size = shortlistedDestinations.size();
         testSize = size-1;
 
-        for (String d : possibleDest) {
+        for (String d : shortlistedDestinations) {
             //String stationsWithinRange = Double.toString(d);
 
             if(i % 2 == 0){
@@ -550,12 +594,31 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    private void stringConstructor() {
+
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < shortlistedDestinations1.size(); i++) {
+
+            if (i == shortlistedDestinations1.size() - 1) {
+
+                sb.append(shortlistedDestinations1.get(i).getLatitude() + ",");
+                sb.append(shortlistedDestinations1.get(i).getLongitude());
+                break;
+            }
+
+            sb.append(shortlistedDestinations1.get(i).getLatitude() + ",");
+            sb.append(shortlistedDestinations1.get(i).getLongitude() + "|");
+
+        }
+        locationsToSend = sb.toString();
+
+        Log.d("locationsToSend", locationsToSend);
+
+    }
+
     private void launchMaps(String station){
-
-
-        boolean isIntentSafe = true;
-
-        if(isIntentSafe) {
 
             String format = "google.navigation:q=" + station; // setup the string to pass
 
@@ -568,37 +631,142 @@ public class MainActivity extends AppCompatActivity {
           //  launchMap.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
             this.startActivity(launchMap);
+    }
 
-        }
-        else{
-            // error message here
-        }
+    private String toMins(String time) {
 
+       return time.replaceFirst(":", "");
 
     }
 
-    private String toMins(String s) {
 
-        String formatedHourString = s.replaceFirst(":", "");
+    private void buildDialog(){
 
-        return formatedHourString;
+        new AlertDialog.Builder(this,android.R.style.Theme_Holo_Dialog)
+                .setTitle("Service Station is Closed")
+                .setMessage("Do you want to proceed to the closest open station instead?")
+
+                // Specifying a listener allows you to take an action before dismissing the dialog.
+                // The dialog is automatically dismissed when a dialog button is clicked.
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Continue with delete operation
+                        //launchMaps(HH.secondClosestStation);
+                    }
+                })
+
+
+                // A null listener allows the button to dismiss the dialog and take no further action.
+                .setNegativeButton(android.R.string.cancel, null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
     }
+
+    // THIS DOESNT WORK
+    public static class DialogFragmentContainer extends DialogFragment {
+
+        private MainActivity mainActivityRef;
+        private HttpHandler httpHandlerRef;
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            mainActivityRef = (MainActivity) getActivity();
+            
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),android.R.style.Theme_Holo_Dialog);
+            builder.setTitle("Service Station is Closed");
+            builder.setMessage("Do you want to proceed to the closest open station instead?");
+            builder.setIcon(android.R.drawable.ic_dialog_alert)
+
+
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                          // mainActivityRef.launchMaps(secondClosestStation);
+
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+    private int stringSplitter(String closestE85Station){
+
+
+        int stationIndex = 0;
+        int commaIndex;
+
+        String suburb;
+
+        // take only the suburb from the output
+        commaIndex = closestE85Station.indexOf(',');
+        String street = closestE85Station.substring(0,commaIndex);
+        String restOfWord = closestE85Station.substring(commaIndex + 2);
+        int d = restOfWord.indexOf(" ");
+
+        String nextWordCheck = restOfWord.substring(d+1,d+3); // grab the next 2 charachters after the space
+
+        boolean hasLowerCase = !nextWordCheck.equals(nextWordCheck.toUpperCase()); // Check if the 2 letters are upper case or not
+
+        if(hasLowerCase){ // if they are not the next word must be part of the suburb
+
+            String endOfString = restOfWord.substring(d+1);
+            int spaceIndex = endOfString.indexOf(" ");
+            String suburbSecondPart = endOfString.substring(0, spaceIndex);
+            suburb = restOfWord.substring(0, d) + " " + suburbSecondPart;
+
+        } else{
+
+            suburb = restOfWord.substring(0, d);
+
+        }
+
+
+        Log.d("stringSplitter", suburb); // check if it works
+
+        for (int i = 0; i < stations.size(); ) {
+
+            String stationSuburb = stations.get(i).getSuburb();
+
+            if (suburb.equals(stationSuburb)) { // stations match! grab that stations index
+
+//                open = stations.get(i).getOpeningTime();
+//                closed = stations.get(i).getClosingTime();
+
+                stationIndex = i;
+                break;
+
+            } else {
+                i++;
+            }
+
+        }
+
+        return stationIndex;
+
+    }
+
 
     private static class HttpHandler extends AsyncTask<Void, Integer, String> {
 
-        private String data ="";
-        private ArrayList<Integer> theLocation = new ArrayList<>();
+        //private ArrayList<Integer> theLocation = new ArrayList<>();
         private ArrayList<String> locationStringList = new ArrayList<>();
 
-        private int count = 0;
-        private double lat = 0;
-        private double lng = 0;
-        private int firstChoiceNumb, secondChoiceNumb, thirdChoiceNumb;
+        private int open;
+        private int closed;
         private int firstIndex, secondIndex, thirdIndex;
-        private String closestE85Address,secondClosestStation, thirdClosestStation;
-        private String suburb;
+        //private String closestE85Address,secondClosestStation, thirdClosestStation;
         private WeakReference<MainActivity> activityWeakReference;
-
+        DialogFragment newFragment = new DialogFragmentContainer();
 
         // only retain a weak reference to the activity
         HttpHandler(MainActivity context) {
@@ -608,32 +776,25 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected  void onPreExecute()
         {
-            MainActivity activity = activityWeakReference.get();
-
-            lat = activity.getUserLocationLatitude();
-            lng = activity.getUserLocationLongitude();
 
         }
 
         @Override
         protected String doInBackground(Void... voids) {
-
+            MainActivity activity = activityWeakReference.get();
             String locationString = MainActivity.getLocationsToSend();
-
-
 
                 try {
 
-                   // publishProgress(count);
+                    URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + activity.getUserLocationLatitude() + "," + activity.getUserLocationLongitude() + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
-                    URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
-
-                    URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
+                    //URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
                     HttpURLConnection httpURLConnection = (HttpURLConnection) testingParsedDestination.openConnection();
                     InputStream inputStream = httpURLConnection.getInputStream();
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                     String line = "";
+                    String data = "";
 
                     while (line != null) {
                         line = bufferedReader.readLine();
@@ -658,25 +819,18 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject row0 = (JSONObject) rowsArray.get(0);
                     JSONArray elements = row0.getJSONArray("elements");
 
-                    int[][] stationsAndTheirDuration = new int[elements.length()][2];
-
                     for (int i = 0; i < elements.length(); ++i) {
 
                         JSONObject objects = elements.getJSONObject(i);
 
                         JSONObject durationObject = objects.getJSONObject("duration_in_traffic");
 
-                        theLocation.add(durationObject.getInt("value"));
+                        activity.theLocation.add(durationObject.getInt("value"));
                         locationStringList.add(destAddresses.getString(i));
-
-                        // Append 2D array
-                        stationsAndTheirDuration[i][0] = theLocation.get(i);
-                        stationsAndTheirDuration[i][1] = i;
 
                     }
 
-
-                    ArrayList<Integer> theLocationContainer = new ArrayList<>(theLocation);
+                    ArrayList<Integer> theLocationContainer = new ArrayList<>(activity.theLocation);
 
                     for (String d : locationStringList) {
                         Log.d("checkDestinationStrings", d);
@@ -684,31 +838,28 @@ public class MainActivity extends AppCompatActivity {
 
                     Collections.sort(theLocationContainer);
 
+                    int firstChoiceNumb = theLocationContainer.get(0);
+                    int secondChoiceNumb = theLocationContainer.get(1);
+                    int thirdChoiceNumb = theLocationContainer.get(2);
 
-                    firstChoiceNumb = theLocationContainer.get(0);
-                    secondChoiceNumb = theLocationContainer.get(1);
-                    thirdChoiceNumb = theLocationContainer.get(2);
+                    firstIndex = activity.theLocation.indexOf(firstChoiceNumb);
+                    secondIndex = activity.theLocation.indexOf(secondChoiceNumb);
+                    thirdIndex = activity.theLocation.indexOf(thirdChoiceNumb);
 
-                    firstIndex = theLocation.indexOf(firstChoiceNumb);
-                    secondIndex = theLocation.indexOf(secondChoiceNumb);
-                    thirdIndex = theLocation.indexOf(thirdChoiceNumb);
-
-                    closestE85Address = (destAddresses.getString(firstIndex));
-                    secondClosestStation = (destAddresses.getString(secondIndex));
-                    thirdClosestStation = (destAddresses.getString(thirdIndex));
-
+                    activity.closestE85Address = (destAddresses.getString(firstIndex));
+                    activity.secondClosestStation = (destAddresses.getString(secondIndex));
+                    activity.thirdClosestStation = (destAddresses.getString(thirdIndex));
 
 
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
+
+                }catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
 
-            return closestE85Address;
+            return activity.closestE85Address;
         }
 
 
@@ -718,55 +869,42 @@ public class MainActivity extends AppCompatActivity {
             MainActivity activity = activityWeakReference.get();
             activity.progressBar.setVisibility(View.GONE);
 
+
             if (output != null && stopMapsLaunching) {
                 super.onPostExecute(output);
 
                 // modify the activity's UI
                 activity.firstStation.setVisibility(View.VISIBLE);
-                activity.firstStation.setText(closestE85Address.replace(", Australia", ""));
+                activity.firstStation.setText(activity.closestE85Address.replace(", Australia", ""));
                 activity.secondStation.setVisibility(View.VISIBLE);
-                activity.secondStation.setText(secondClosestStation.replace(", Australia", ""));
+                activity.secondStation.setText(activity.secondClosestStation.replace(", Australia", ""));
                 activity.thirdStation.setVisibility(View.VISIBLE);
-                activity.thirdStation.setText(thirdClosestStation.replace(", Australia", ""));
+                activity.thirdStation.setText(activity.thirdClosestStation.replace(", Australia", ""));
 
+                activity.stateWatch.setText(activity.getLifecycle().getCurrentState().toString());
 
             } else {
 
-                int open = 0;
-                int closed = 0;
+//                activity.launchMaps(closestE85Address); // run without opening hour functionality
+//                activity.finish();
 
-                // take only the suburb from the output
-                count = closestE85Address.indexOf(',');
-                String rest = closestE85Address.substring(count + 2);
-                int d = rest.indexOf(" ");
-                suburb = rest.substring(0, d);
-                Log.d("stringSplitter", suburb); // check if it works
+                    int index = activity.stringSplitter(activity.closestE85Address);
 
-                for (int i = 0; i < activity.stations.size(); ) {
+                        open = activity.stations.get(index).getOpeningTime();
+                        closed = activity.stations.get(index).getClosingTime();
 
-                    String stationSuburb = activity.stations.get(i).getSuburb();
+            if (activity.isTheStationOpen(open, closed)) { // station is open send the user to maps
 
-                    if (suburb.equals(stationSuburb)) { // stations match! grab the opening times
-
-                        open = activity.stations.get(i).getOpeningTime();
-                        closed = activity.stations.get(i).getClosingTime();
-                       break;
-
-                    } else {
-                        i++;
-                    }
-
-                }
-
-                if (activity.isTheStationOpen(open, closed)) {
-
-                    // station is open send the user to maps
-                    activity.launchMaps(closestE85Address);
+                    activity.launchMaps(activity.closestE85Address);
                     activity.finish();
 
-                } else { // station is closed
+            } else { // station is closed
 
+                    //activity.buildDialog();
+                    newFragment.show(activity.getSupportFragmentManager(),"stationClosed");
                     activity.errorCheck.setText("Station is not open Go EAT ASS");
+                    activity.stateWatch.setText(activity.getLifecycle().getCurrentState().toString());
+
                 }
 
                // activity.launchMaps(closestE85Address);

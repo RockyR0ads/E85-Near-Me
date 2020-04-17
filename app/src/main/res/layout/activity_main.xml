@@ -22,11 +22,23 @@
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_below="@id/fetchedData"
+            android:layout_marginTop="20dp"
             android:layout_height="match_parent"
             android:textColor="@color/colorPrimary"
             android:textSize="50dp"
             android:textStyle="bold"
             android:text="Boo" />
+
+    <TextView
+        android:id="@+id/state"
+        android:layout_width="match_parent"
+        android:layout_below="@id/fetchedData"
+        android:layout_marginBottom="100dp"
+        android:layout_height="match_parent"
+        android:textColor="@color/colorAccent"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:text="State" />
 
     <Button
         android:id="@+id/button"
