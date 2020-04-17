@@ -78,6 +78,10 @@ public class MainActivity extends AppCompatActivity {
     TextView errorCheck;
     TextView stateWatch;
 
+    private ArrayList<Integer> theLocation = new ArrayList<>();
+
+    private String closestE85Address,secondClosestStation, thirdClosestStation;
+
     private LocationRequest mLocationRequest;
 
     private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
@@ -90,11 +94,12 @@ public class MainActivity extends AppCompatActivity {
 
     private static String locationsToSend = "";
 
-    public static Boolean getStopMapsLaunching() {
-        return stopMapsLaunching;
-    }
+//    public static Boolean getStopMapsLaunching() {
+//        return stopMapsLaunching;
+//    }
 
     private static Boolean stopMapsLaunching = false;
+    private Boolean provideStationOptions = false;
 
     final static double homeLat = -33.926360;
     final static double homeLng = 151.121270;
@@ -236,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
                 animateProgressBar();
                 HH.execute();
 
+
             }
         });
 
@@ -243,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                launchMaps(HH.closestE85Address);
+                launchMaps(closestE85Address);
 
             }
         });
@@ -252,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                launchMaps(HH.secondClosestStation);
+                launchMaps(secondClosestStation);
 
             }
         });
@@ -261,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                launchMaps(HH.thirdClosestStation);
+                launchMaps(thirdClosestStation);
 
             }
         });
@@ -645,7 +651,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // Continue with delete operation
-                        launchMaps(HH.secondClosestStation);
+                        //launchMaps(HH.secondClosestStation);
                     }
                 })
 
@@ -695,8 +701,7 @@ public class MainActivity extends AppCompatActivity {
 
     private int stringSplitter(String closestE85Station){
 
-        int open = 0;
-        int closed = 0;
+
         int stationIndex = 0;
         int commaIndex;
 
@@ -753,13 +758,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static class HttpHandler extends AsyncTask<Void, Integer, String> {
 
-        private ArrayList<Integer> theLocation = new ArrayList<>();
+        //private ArrayList<Integer> theLocation = new ArrayList<>();
         private ArrayList<String> locationStringList = new ArrayList<>();
 
         private int open;
         private int closed;
         private int firstIndex, secondIndex, thirdIndex;
-        private String closestE85Address,secondClosestStation, thirdClosestStation;
+        //private String closestE85Address,secondClosestStation, thirdClosestStation;
         private WeakReference<MainActivity> activityWeakReference;
         DialogFragment newFragment = new DialogFragmentContainer();
 
@@ -820,13 +825,12 @@ public class MainActivity extends AppCompatActivity {
 
                         JSONObject durationObject = objects.getJSONObject("duration_in_traffic");
 
-                        theLocation.add(durationObject.getInt("value"));
+                        activity.theLocation.add(durationObject.getInt("value"));
                         locationStringList.add(destAddresses.getString(i));
 
                     }
 
-
-                    ArrayList<Integer> theLocationContainer = new ArrayList<>(theLocation);
+                    ArrayList<Integer> theLocationContainer = new ArrayList<>(activity.theLocation);
 
                     for (String d : locationStringList) {
                         Log.d("checkDestinationStrings", d);
@@ -838,13 +842,13 @@ public class MainActivity extends AppCompatActivity {
                     int secondChoiceNumb = theLocationContainer.get(1);
                     int thirdChoiceNumb = theLocationContainer.get(2);
 
-                    firstIndex = theLocation.indexOf(firstChoiceNumb);
-                    secondIndex = theLocation.indexOf(secondChoiceNumb);
-                    thirdIndex = theLocation.indexOf(thirdChoiceNumb);
+                    firstIndex = activity.theLocation.indexOf(firstChoiceNumb);
+                    secondIndex = activity.theLocation.indexOf(secondChoiceNumb);
+                    thirdIndex = activity.theLocation.indexOf(thirdChoiceNumb);
 
-                    closestE85Address = (destAddresses.getString(firstIndex));
-                    secondClosestStation = (destAddresses.getString(secondIndex));
-                    thirdClosestStation = (destAddresses.getString(thirdIndex));
+                    activity.closestE85Address = (destAddresses.getString(firstIndex));
+                    activity.secondClosestStation = (destAddresses.getString(secondIndex));
+                    activity.thirdClosestStation = (destAddresses.getString(thirdIndex));
 
 
 
@@ -855,7 +859,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-            return closestE85Address;
+            return activity.closestE85Address;
         }
 
 
@@ -871,11 +875,11 @@ public class MainActivity extends AppCompatActivity {
 
                 // modify the activity's UI
                 activity.firstStation.setVisibility(View.VISIBLE);
-                activity.firstStation.setText(closestE85Address.replace(", Australia", ""));
+                activity.firstStation.setText(activity.closestE85Address.replace(", Australia", ""));
                 activity.secondStation.setVisibility(View.VISIBLE);
-                activity.secondStation.setText(secondClosestStation.replace(", Australia", ""));
+                activity.secondStation.setText(activity.secondClosestStation.replace(", Australia", ""));
                 activity.thirdStation.setVisibility(View.VISIBLE);
-                activity.thirdStation.setText(thirdClosestStation.replace(", Australia", ""));
+                activity.thirdStation.setText(activity.thirdClosestStation.replace(", Australia", ""));
 
                 activity.stateWatch.setText(activity.getLifecycle().getCurrentState().toString());
 
@@ -884,14 +888,14 @@ public class MainActivity extends AppCompatActivity {
 //                activity.launchMaps(closestE85Address); // run without opening hour functionality
 //                activity.finish();
 
-                    int index = activity.stringSplitter(closestE85Address);
+                    int index = activity.stringSplitter(activity.closestE85Address);
 
                         open = activity.stations.get(index).getOpeningTime();
                         closed = activity.stations.get(index).getClosingTime();
 
             if (activity.isTheStationOpen(open, closed)) { // station is open send the user to maps
 
-                    activity.launchMaps(closestE85Address);
+                    activity.launchMaps(activity.closestE85Address);
                     activity.finish();
 
             } else { // station is closed
