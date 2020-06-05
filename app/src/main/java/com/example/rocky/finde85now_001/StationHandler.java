@@ -18,8 +18,12 @@ class StationHandler {
     private ArrayList<Station> shortlistedDestinations = new ArrayList<>();
     private double[] distance = new double[24];
     private static String locationsToSend = "";
+
     public ArrayList<String> addressesReturned = new ArrayList<>();
     public ArrayList<Integer> timeToArriveInTraffic = new ArrayList<>();
+    public ArrayList<String> distanceToStation = new ArrayList<>();
+    public ArrayList<String> timeToStation = new ArrayList<>();
+
     public static String getLocationsToSend() {
         return locationsToSend;
     }
@@ -49,7 +53,7 @@ class StationHandler {
             distance[i] = straightLineDistanceInMeters[0];
 
             // store sub 30km stations in a straight line
-            if (straightLineDistanceInMeters[0] < 50000) {
+            if (straightLineDistanceInMeters[0] < 9000) {
                 shortlistedDestinations.add(stations.get(i));
             }
 
@@ -131,6 +135,22 @@ class StationHandler {
         }
         return addressesReturned.get(storedIndex);
 
+    }
+
+    public String snmStringConstruct(String station){
+
+        String[] indvidualWords = station.split("\\s+");
+        String kms = " ";
+        String timeInMinutes = " ";
+
+        for(int i = 0; i < addressesReturned.size(); i ++){
+            if(station.equals(addressesReturned.get(i))){
+                kms = distanceToStation.get(i);
+                timeInMinutes = timeToStation.get(i);
+            }
+        }
+
+        return indvidualWords[0] + " " + indvidualWords[1] + " " + indvidualWords[2] + " " + indvidualWords[3] + " " + kms + " " + timeInMinutes;
     }
 
     public Station getStationByAddress(String station) {

@@ -178,9 +178,6 @@ public class MainActivity extends AppCompatActivity {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
 
-//                                        userLocationLatitude = -33.653588;
-//                                        userLocationLongitude = 150.868142;  // vineyard
-
                                     userLocationLatitude = location.getLatitude();
                                     userLocationLongitude = location.getLongitude();
 
@@ -333,11 +330,12 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < elements.length(); ++i) {
 
                     JSONObject objects = elements.getJSONObject(i);
-
-                    JSONObject durationObject = objects.getJSONObject("duration_in_traffic");
-
-                    activity.stationHandler.timeToArriveInTraffic.add(durationObject.getInt("value"));
+                    
+                    activity.stationHandler.timeToArriveInTraffic.add(objects.getJSONObject("duration_in_traffic").getInt("value"));
+                    activity.stationHandler.distanceToStation.add(objects.getJSONObject("distance").getString("text"));
+                    activity.stationHandler.timeToStation.add(objects.getJSONObject("duration_in_traffic").getString("text"));
                     activity.stationHandler.addressesReturned.add(destAddresses.getString(i));
+
 
                 }
 
@@ -380,29 +378,30 @@ public class MainActivity extends AppCompatActivity {
             activity.progressBar.setVisibility(View.GONE);
 
 
-            if (output != null && stopMapsLaunching) { // user wants to see closest stations
+            if (output != null && stopMapsLaunching) { // user wants to see the 3 closest stations
                 super.onPostExecute(output);
 
                 // modify the activity's UI
                 activity.firstStation.setVisibility(View.VISIBLE);
-                activity.firstStation.setText(activity.station.getClosestStationAddress().replace(", Australia", ""));
+                activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStationAddress()));
                 activity.secondStation.setVisibility(View.VISIBLE);
-                activity.secondStation.setText(activity.station.getSecondClosestStationAddress().replace(", Australia", ""));
+                activity.secondStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getSecondClosestStationAddress()));
                 activity.thirdStation.setVisibility(View.VISIBLE);
-                activity.thirdStation.setText(activity.station.getThirdClosestStationAddress().replace(", Australia", ""));
+                activity.thirdStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getThirdClosestStationAddress()));
 
                 activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
 
             } else {
-                if (activity.stationHandler.getStationByAddress(activity.station.getClosestStationAddress()).isTheStationOpen()) { // station is open send the user to maps
+                    if (activity.stationHandler.getStationByAddress(activity.station.getClosestStationAddress()).isTheStationOpen()) { // station is open send the user to maps
                     activity.launchMaps(activity.station.getClosestStationAddress());
                     activity.finish();
 
-                } else { // station is closed
+                    } else { // station is closed
                     activity.buildDialog();
                     activity.errorCheck.setText("Station is not open Go EAT ASS");
                     activity.stateWatch.setText(activity.getLifecycle().getCurrentState().toString());
-                }
+
+                    }
             }
         }
     }
