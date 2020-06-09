@@ -381,19 +381,25 @@ public class MainActivity extends AppCompatActivity {
 
             MainActivity activity = activityWeakReference.get();
             activity.progressBar.setVisibility(View.GONE);
-            Drawable drawable = activity.res.getDrawable(R.drawable.btn_rounded_red);
+            Drawable red = activity.res.getDrawable(R.drawable.btn_rounded_red);
+            Drawable green = activity.res.getDrawable(R.drawable.btn_rounded_green);
 
             if (output != null && stopMapsLaunching) { // user wants to see the 3 closest stations
                 super.onPostExecute(output);
 
                 // modify the activity's UI
-                if(!activity.stationHandler.getStationByAddress(activity.station.getClosestStationAddress()).isTheStationOpen()){
-                    activity.firstStation.setBackground(drawable);
-                }else if(!activity.stationHandler.getStationByAddress(activity.station.getSecondClosestStationAddress()).isTheStationOpen()){
-                    activity.secondStation.setBackground(drawable);
-                }else if(!activity.stationHandler.getStationByAddress(activity.station.getThirdClosestStationAddress()).isTheStationOpen()){
-                    activity.thirdStation.setBackground(drawable);
-                }
+                if(activity.stationHandler.getStationByAddress(activity.station.getClosestStationAddress()).isTheStationOpen()){
+                    activity.firstStation.setBackground(green);
+                }else{activity.firstStation.setBackground(red);}
+
+                if(activity.stationHandler.getStationByAddress(activity.station.getSecondClosestStationAddress()).isTheStationOpen()){
+                    activity.secondStation.setBackground(green);
+                }else{activity.secondStation.setBackground(red);}
+
+                if(activity.stationHandler.getStationByAddress(activity.station.getThirdClosestStationAddress()).isTheStationOpen()){
+                    activity.thirdStation.setBackground(green);
+                }else{activity.thirdStation.setBackground(red);}
+
                 activity.firstStation.setVisibility(View.VISIBLE);
                 activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStationAddress()));
                 activity.secondStation.setVisibility(View.VISIBLE);
