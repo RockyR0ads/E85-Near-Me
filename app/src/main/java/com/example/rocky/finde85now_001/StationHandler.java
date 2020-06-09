@@ -120,7 +120,6 @@ class StationHandler {
         // loop through station objects and check which are open
         Station s = new Station();
         int storedIndex = 0;
-        ArrayList<String> possibleOpenLocations = new ArrayList<>();
         int timeInTraffic = 9999;
 
         for(int i = 0; i < addressesReturned.size(); i++){
@@ -142,6 +141,15 @@ class StationHandler {
         String[] indvidualWords = station.split("\\s+");
         String kms = " ";
         String timeInMinutes = " ";
+        String openOrNot;
+
+        Station currentStation = getStationByAddress(station);
+
+        if(currentStation.isTheStationOpen()){
+            openOrNot = "OPEN";
+        }else{
+            openOrNot = "CLOSED";
+        }
 
         for(int i = 0; i < addressesReturned.size(); i ++){
             if(station.equals(addressesReturned.get(i))){
@@ -150,7 +158,7 @@ class StationHandler {
             }
         }
 
-        return indvidualWords[0] + " " + indvidualWords[1] + " " + indvidualWords[2] + " " + indvidualWords[3] + " " + kms + " " + timeInMinutes;
+        return indvidualWords[0] + " " + indvidualWords[1] + " " + indvidualWords[2] + " " + indvidualWords[3] + " " + kms + " " + timeInMinutes + " " + openOrNot;
     }
 
     public Station getStationByAddress(String station) {

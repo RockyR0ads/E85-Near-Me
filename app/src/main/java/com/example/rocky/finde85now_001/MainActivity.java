@@ -4,6 +4,9 @@ import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -73,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
     StationHandler stationHandler;
     Station station;
+    Resources res;
 
     // GETTERS & SETTERS
     public double getUserLocationLatitude() {
@@ -104,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         stationHandler = new StationHandler();
         stationHandler.initialiseStations();
         station = new Station();
+        res = getResources();
 
         stateWatch.setText(this.getLifecycle().getCurrentState().toString());
 
@@ -330,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < elements.length(); ++i) {
 
                     JSONObject objects = elements.getJSONObject(i);
-                    
+
                     activity.stationHandler.timeToArriveInTraffic.add(objects.getJSONObject("duration_in_traffic").getInt("value"));
                     activity.stationHandler.distanceToStation.add(objects.getJSONObject("distance").getString("text"));
                     activity.stationHandler.timeToStation.add(objects.getJSONObject("duration_in_traffic").getString("text"));
@@ -376,12 +381,19 @@ public class MainActivity extends AppCompatActivity {
 
             MainActivity activity = activityWeakReference.get();
             activity.progressBar.setVisibility(View.GONE);
-
+            Drawable drawable = activity.res.getDrawable(R.drawable.btn_rounded_red);
 
             if (output != null && stopMapsLaunching) { // user wants to see the 3 closest stations
                 super.onPostExecute(output);
 
                 // modify the activity's UI
+                if(!activity.stationHandler.getStationByAddress(activity.station.getClosestStationAddress()).isTheStationOpen()){
+                    activity.firstStation.setBackground(drawable);
+                }else if(!activity.stationHandler.getStationByAddress(activity.station.getSecondClosestStationAddress()).isTheStationOpen()){
+                    activity.secondStation.setBackground(drawable);
+                }else if(!activity.stationHandler.getStationByAddress(activity.station.getThirdClosestStationAddress()).isTheStationOpen()){
+                    activity.thirdStation.setBackground(drawable);
+                }
                 activity.firstStation.setVisibility(View.VISIBLE);
                 activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStationAddress()));
                 activity.secondStation.setVisibility(View.VISIBLE);
@@ -393,13 +405,13 @@ public class MainActivity extends AppCompatActivity {
 
             } else {
                     if (activity.stationHandler.getStationByAddress(activity.station.getClosestStationAddress()).isTheStationOpen()) { // station is open send the user to maps
-                    activity.launchMaps(activity.station.getClosestStationAddress());
-                    activity.finish();
+                        activity.launchMaps(activity.station.getClosestStationAddress());
+                        activity.finish();
 
                     } else { // station is closed
-                    activity.buildDialog();
-                    activity.errorCheck.setText("Station is not open Go EAT ASS");
-                    activity.stateWatch.setText(activity.getLifecycle().getCurrentState().toString());
+                            activity.buildDialog();
+                            activity.errorCheck.setText("Station is not open Go EAT ASS");
+                            activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
 
                     }
             }
