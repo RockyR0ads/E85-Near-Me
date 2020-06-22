@@ -31,6 +31,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -331,6 +332,10 @@ public class MainActivity extends AppCompatActivity {
                 JSONArray destAddresses = JO.getJSONArray("destination_addresses");
                 JSONObject row0 = (JSONObject) rowsArray.get(0);
                 JSONArray elements = row0.getJSONArray("elements");
+
+                String test = rowsArray.toString();
+
+
 
                 for (int i = 0; i < elements.length(); ++i) {
 

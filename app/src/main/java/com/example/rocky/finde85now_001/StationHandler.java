@@ -1,14 +1,12 @@
 package com.example.rocky.finde85now_001;
 
+import android.content.Context;
 import android.location.Location;
 import android.util.Log;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
 
-import static com.example.rocky.finde85now_001.Station.toMins;
+import java.util.ArrayList;
+
 
 class StationHandler {
 
@@ -30,6 +28,7 @@ class StationHandler {
 
 
     void initialiseStations() {
+        //Syd
         stations.add(new Station(-33.649917, 150.862685, 530, 2130, "Vineyard", "Freedom", false));
         stations.add(new Station(-33.810202, 151.032491, 600, 2200, "Rydalmere", "United", false));
         stations.add(new Station(-33.861967, 151.167653, 0,   2400, "Rozelle","United",  true));
@@ -41,6 +40,20 @@ class StationHandler {
         stations.add(new Station(-33.872234, 150.900077, 600, 2200, "Prairiewood","United", false));
         stations.add(new Station(-34.030073, 150.831892, 0,   2400, "Minto","United", true));
         stations.add(new Station(-33.680160, 151.225010, 700, 2200, "Terrey Hills","United", false));
+        //Outside of Syd (NSW)
+        stations.add(new Station(-30.290270, 153.120960, 0, 2400, "Coffs Central","United", true));
+        stations.add(new Station(-33.230820, 151.503160, 0, 2400, "Leeton","United", true));
+        stations.add(new Station(-35.181880, 149.235120, 0, 2400, "Sutton","United", true));
+        stations.add(new Station(-34.868590, 147.583370, 500, 2300, "Junee","United", false));
+        stations.add(new Station(-35.122604, 147.392120, 0, 2400, "Wagga Wagga","United", true));
+        stations.add(new Station(-34.903915, 150.602692, 500, 2100, "Nowra","United", false));
+        stations.add(new Station(-33.285255, 149.103729, 500, 2100, "Orange","United", false));
+        stations.add(new Station(-33.360249, 151.369461, 500, 2100, "Ourimbah","United", false));
+        stations.add(new Station(-33.234322, 151.555771, 600, 2100, "Budgewoi","United", false));
+        stations.add(new Station(-32.751464, 151.585977, 0, 2400, "East Maitland","United", true));
+        stations.add(new Station(-32.766464, 151.611816, 600, 2200, "Metford","United", false));
+       // stations.add(new Station(-32.766464, 151.611816, 600, 2000, "Charlotte Bay","United", false)); fact check this station
+
     }
 
     // Parallel method trying to get same result using station class instead of hard coded array
@@ -53,7 +66,7 @@ class StationHandler {
             distance[i] = straightLineDistanceInMeters[0];
 
             // store sub 30km stations in a straight line
-            if (straightLineDistanceInMeters[0] < 9000) {
+            if (straightLineDistanceInMeters[0] < 50000) {
                 shortlistedDestinations.add(stations.get(i));
             }
 
@@ -160,6 +173,8 @@ class StationHandler {
 
         return indvidualWords[0] + " " + indvidualWords[1] + " " + indvidualWords[2] + " " + indvidualWords[3] + " " + kms + " " + timeInMinutes + " " + openOrNot;
     }
+
+
 
     public Station getStationByAddress(String station) {
         return stations.get(stringSplitter(station));
