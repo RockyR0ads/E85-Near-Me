@@ -3,6 +3,7 @@ package com.example.rocky.finde85now_001;
 import android.content.Context;
 import android.location.Location;
 import android.util.Log;
+import android.widget.TextView;
 
 
 import java.util.ArrayList;

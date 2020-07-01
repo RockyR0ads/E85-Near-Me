@@ -19,7 +19,7 @@
 
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/Error"
             android:layout_width="match_parent"
             android:layout_below="@id/fetchedData"
             android:layout_marginTop="20dp"

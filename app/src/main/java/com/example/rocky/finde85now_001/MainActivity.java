@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
@@ -31,7 +30,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -59,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     Button secondStation;
     Button thirdStation;
     TextView data;
-    TextView textView;
+    TextView error;
     TextView errorCheck;
     TextView stateWatch;
 
@@ -96,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         click = findViewById(R.id.button);
         data = findViewById(R.id.fetchedData);
-        textView = findViewById(R.id.textView);
+        error = findViewById(R.id.Error);
         stationsNearMe = findViewById(R.id.stationsNearMe);
         firstStation = findViewById(R.id.firstStation);
         secondStation = findViewById(R.id.secondStation);
@@ -145,21 +143,21 @@ public class MainActivity extends AppCompatActivity {
         firstStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                launchMaps(station.getClosestStationAddress());
+                launchMaps(station.getClosestStations().get(0));
             }
         });
 
         secondStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                launchMaps(station.getSecondClosestStationAddress());
+                launchMaps(station.getClosestStations().get(1));
             }
         });
 
         thirdStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                launchMaps(station.getThirdClosestStationAddress());
+                launchMaps(station.getClosestStations().get(2));
             }
         });
     }
@@ -186,6 +184,10 @@ public class MainActivity extends AppCompatActivity {
 
                                     userLocationLatitude = location.getLatitude();
                                     userLocationLongitude = location.getLongitude();
+
+                                    // Moore Creek test
+                                    //userLocationLatitude = -34.790970;
+                                //  userLocationLongitude = 147.025000;
 
                                     data.setText("Longitude: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
 
@@ -233,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // permission denied, boo! Disable the
                 // functionality that depends on this permission.
-                textView.setText(" This \n application \n requires \n location \n permissions \n to run");
+                error.setText(" This \n application \n requires \n location \n permissions \n to run");
             }
         }
     }
@@ -251,10 +253,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void buildDialog(){
 
-        Station s = stationHandler.getStationByAddress(station.getClosestStationAddress());
+        Station s = stationHandler.getStationByAddress(station.getClosestStations().get(0));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(s.getCompany() + " " + s.getSuburb() + " is CLOSED");
+       // builder.setTitle(s.getCompany() + " " + s.getSuburb() + " is CLOSED");
         builder.setMessage("Navigate to the closest open station?");
         builder.setIcon(android.R.drawable.ic_dialog_alert)
 
@@ -358,17 +360,10 @@ public class MainActivity extends AppCompatActivity {
 
                 Collections.sort(minutesToDestination);
 
-                // THIS NEEDS AN ARRAY IMPLEMENTATION FOR CLOSEST STATIONS
+                for(int i= 0; i < minutesToDestination.size(); i++) {
+                     activity.station.setClosestStationAddress((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(i)))));
+                }
 
-//                for(int i= 0; i < minutesToDestination.size(); i++) {
-//
-//                    activity.station.setClosestStationAddress((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(i)))));
-//
-//                }
-
-                activity.station.setClosestStationAddress((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(0)))));
-                activity.station.setSecondClosestStationAddress((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(1)))));
-                activity.station.setThirdClosestStationAddress((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(2)))));
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -377,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-            return activity.station.getClosestStationAddress();
+            return activity.station.getClosestStations().get(0);
         }
 
 
@@ -393,30 +388,30 @@ public class MainActivity extends AppCompatActivity {
                 super.onPostExecute(output);
 
                 // modify the activity's UI
-                if(activity.stationHandler.getStationByAddress(activity.station.getClosestStationAddress()).isTheStationOpen()){
+                if(activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(0)).isTheStationOpen()){
                     activity.firstStation.setBackground(green);
                 }else{activity.firstStation.setBackground(red);}
 
-                if(activity.stationHandler.getStationByAddress(activity.station.getSecondClosestStationAddress()).isTheStationOpen()){
+                if(activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(1)).isTheStationOpen()){
                     activity.secondStation.setBackground(green);
                 }else{activity.secondStation.setBackground(red);}
 
-                if(activity.stationHandler.getStationByAddress(activity.station.getThirdClosestStationAddress()).isTheStationOpen()){
+                if(activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(2)).isTheStationOpen()){
                     activity.thirdStation.setBackground(green);
                 }else{activity.thirdStation.setBackground(red);}
 
                 activity.firstStation.setVisibility(View.VISIBLE);
-                activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStationAddress()));
+                activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStations().get(0)));
                 activity.secondStation.setVisibility(View.VISIBLE);
-                activity.secondStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getSecondClosestStationAddress()));
+                activity.secondStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStations().get(1)));
                 activity.thirdStation.setVisibility(View.VISIBLE);
-                activity.thirdStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getThirdClosestStationAddress()));
+                activity.thirdStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStations().get(2)));
 
                 activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
 
             } else {
-                    if (activity.stationHandler.getStationByAddress(activity.station.getClosestStationAddress()).isTheStationOpen()) { // station is open send the user to maps
-                        activity.launchMaps(activity.station.getClosestStationAddress());
+                    if (activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(0)).isTheStationOpen()) { // station is open send the user to maps
+                        activity.launchMaps(activity.station.getClosestStations().get(0));
                         activity.finish();
 
                     } else { // station is closed

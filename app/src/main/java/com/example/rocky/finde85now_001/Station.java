@@ -2,6 +2,7 @@ package com.example.rocky.finde85now_001;
 
 import android.util.Log;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -14,9 +15,9 @@ public class Station {
     private int closingTime;
     private boolean twentyFourHour;
 
-    private String closestStationAddress;
-    private String secondClosestStationAddress;
-    private String thirdClosestStationAddress;
+    private ArrayList<String> closestStations = new ArrayList<>();
+
+
 
     private String company;
     private String suburb;
@@ -42,6 +43,7 @@ public class Station {
 
     //Methods
 
+
     public void setOpeningTime(int opening){
 
        openingTime = opening;
@@ -57,31 +59,13 @@ public class Station {
         this.company = company;
     }
 
-    public String getThirdClosestStationAddress() {
-        return thirdClosestStationAddress;
-    }
-
-    public void setThirdClosestStationAddress(String thirdClosestStationAddress) {
-        this.thirdClosestStationAddress = thirdClosestStationAddress;
-    }
-
-    public String getSecondClosestStationAddress() {
-        return secondClosestStationAddress;
-    }
-
-    public void setSecondClosestStationAddress(String secondClosestStationAddress) {
-        this.secondClosestStationAddress = secondClosestStationAddress;
-    }
-
-
-    public String getClosestStationAddress() {
-        return closestStationAddress;
-    }
-
     public void setClosestStationAddress(String closestStationAddress) {
-        this.closestStationAddress = closestStationAddress;
+        this.closestStations.add(closestStationAddress);
     }
 
+    public ArrayList<String> getClosestStations() {
+        return closestStations;
+    }
 
     public int getOpeningTime(){
 
@@ -165,7 +149,7 @@ public class Station {
 
         currentTime = toMins(currentTime);
         int timeNow = Integer.valueOf(currentTime);
-        //timeNow = 400;                                            //    testing if the time is working
+        timeNow = 400;                                            //    testing if the time is working
         return timeNow > this.openingTime && timeNow < this.closingTime;
     }
 
