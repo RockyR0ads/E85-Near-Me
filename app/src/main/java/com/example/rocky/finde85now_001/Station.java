@@ -149,7 +149,7 @@ public class Station {
 
         currentTime = toMins(currentTime);
         int timeNow = Integer.valueOf(currentTime);
-        timeNow = 400;                                            //    testing if the time is working
+        //timeNow = 400;                                            //    testing if the time is working
         return timeNow > this.openingTime && timeNow < this.closingTime;
     }
 

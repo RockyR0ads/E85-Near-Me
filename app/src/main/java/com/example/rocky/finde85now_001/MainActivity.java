@@ -1,6 +1,8 @@
 package com.example.rocky.finde85now_001;
 
 import android.animation.ObjectAnimator;
+import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -63,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
     private double userLocationLongitude;
     private double userLocationLatitude;
-
+    Context context;
     private ProgressBar progressBar;
 
 
@@ -182,16 +184,22 @@ public class MainActivity extends AppCompatActivity {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
 
-                                    userLocationLatitude = location.getLatitude();
-                                    userLocationLongitude = location.getLongitude();
+                                   // userLocationLatitude = location.getLatitude();
+                                   // userLocationLongitude = location.getLongitude();
 
                                     // Moore Creek test
-                                    //userLocationLatitude = -34.790970;
-                                //  userLocationLongitude = 147.025000;
+                                   // userLocationLatitude = -34.790970;
+                                  //  userLocationLongitude = 147.025000;
+
+                                    // Bourke test
+                                    userLocationLatitude = -30.0914494;
+                                    userLocationLongitude = 145.9429902;
 
                                     data.setText("Longitude: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
 
                                     stationHandler.getDistanceBetween(userLocationLatitude, userLocationLongitude);
+
+
                                 } else {
                                     data.setText("Location is null.");
                                 }
@@ -249,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
         //  launchMap.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
         this.startActivity(launchMap);
+        this.finishAffinity();
     }
 
     private void buildDialog(){
@@ -259,6 +268,7 @@ public class MainActivity extends AppCompatActivity {
        // builder.setTitle(s.getCompany() + " " + s.getSuburb() + " is CLOSED");
         builder.setMessage("Navigate to the closest open station?");
         builder.setIcon(android.R.drawable.ic_dialog_alert)
+
 
 
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -279,6 +289,37 @@ public class MainActivity extends AppCompatActivity {
         // Create the AlertDialog object and return it
         AlertDialog builder1 = builder.create();
         builder1.show();
+
+    }
+
+    public void buildFailureDialog(){
+
+         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("There are no stations within 500Km of your position");
+        builder.setIcon(android.R.drawable.ic_dialog_alert)
+
+
+
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        dialog.cancel();
+
+                        System.exit(0);
+
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                        dialog.cancel();
+
+                    }
+                });
+        // Create the AlertDialog object and return it
+        AlertDialog builder1 = builder.create();
+        builder1.show();
+
     }
 
     private static class HttpHandler extends AsyncTask<Void, Integer, String> {
@@ -302,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
 
-                URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + activity.getUserLocationLatitude() + "," + activity.getUserLocationLongitude() + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
+                    URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + activity.getUserLocationLatitude() + "," + activity.getUserLocationLongitude() + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
                 //URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
@@ -327,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (checkRequest.equals("INVALID_REQUEST")) {
                     Log.d("checkInvalidLog1", "INVALID REQUEST");
-                    return "TEST";
+                    return "FAIL";
                 }
 
                 JSONArray rowsArray = JO.getJSONArray("rows");
@@ -369,6 +410,8 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             } catch (JSONException e) {
                 e.printStackTrace();
+            }catch (Exception e) {
+                e.printStackTrace();
             }
 
 
@@ -384,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
             Drawable red = activity.res.getDrawable(R.drawable.btn_rounded_red);
             Drawable green = activity.res.getDrawable(R.drawable.btn_rounded_green);
 
-            if (output != null && stopMapsLaunching) { // user wants to see the 3 closest stations
+            if ((!output.equals("FAIL")) && stopMapsLaunching) { // user wants to see the 3 closest stations
                 super.onPostExecute(output);
 
                 // modify the activity's UI
@@ -409,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
 
                 activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
 
-            } else {
+            } else if(!output.equals("FAIL")) {
                     if (activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(0)).isTheStationOpen()) { // station is open send the user to maps
                         activity.launchMaps(activity.station.getClosestStations().get(0));
                         activity.finish();
@@ -420,6 +463,11 @@ public class MainActivity extends AppCompatActivity {
                             activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
 
                     }
+
+            }
+            else{
+
+                activity.buildFailureDialog();
             }
         }
     }

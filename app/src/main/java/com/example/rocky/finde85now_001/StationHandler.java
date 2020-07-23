@@ -1,12 +1,13 @@
 package com.example.rocky.finde85now_001;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.location.Location;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.widget.TextView;
-
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 class StationHandler {
@@ -14,14 +15,19 @@ class StationHandler {
 
     // Arrays to hold station lists
     private ArrayList<Station> stations = new ArrayList<>();
-    private ArrayList<Station> shortlistedDestinations = new ArrayList<>();
+    private ArrayList<Station> firstChoiceDestinations = new ArrayList<>();
+    private ArrayList<Station> secondChoiceDestinations = new ArrayList<>();
+    private ArrayList<Station> thirdChoiceDestinations = new ArrayList<>();
     private double[] distance = new double[24];
     private static String locationsToSend = "";
-
+    MainActivity mn = new MainActivity();
     public ArrayList<String> addressesReturned = new ArrayList<>();
     public ArrayList<Integer> timeToArriveInTraffic = new ArrayList<>();
     public ArrayList<String> distanceToStation = new ArrayList<>();
     public ArrayList<String> timeToStation = new ArrayList<>();
+
+
+
 
     public static String getLocationsToSend() {
         return locationsToSend;
@@ -58,7 +64,7 @@ class StationHandler {
     }
 
     // Parallel method trying to get same result using station class instead of hard coded array
-    void getDistanceBetween(double userLocationLatitude, double userLocationLongitude) {
+    public int getDistanceBetween(double userLocationLatitude, double userLocationLongitude) {
         float[] straightLineDistanceInMeters = new float[1];
 
         for (int i = 0; i < stations.size(); i++) {
@@ -66,16 +72,42 @@ class StationHandler {
 
             distance[i] = straightLineDistanceInMeters[0];
 
-            // store sub 30km stations in a straight line
+            // store sub 50km stations in a straight line
             if (straightLineDistanceInMeters[0] < 50000) {
-                shortlistedDestinations.add(stations.get(i));
+                firstChoiceDestinations.add(stations.get(i));
+            }else if(straightLineDistanceInMeters[0] < 100000){
+                secondChoiceDestinations.add(stations.get(i));
+            }else if(straightLineDistanceInMeters[0] < 5000000){
+                thirdChoiceDestinations.add(stations.get(i));
             }
+
 
             String distanceInStraightLine = Double.toString(distance[i]);
             Log.d("distanceInStraightLine", distanceInStraightLine);
         }
-        stringConstructor();
+            // Logic to decide to ensure at least 3 stations are always found
+            while(firstChoiceDestinations.size() < 3 && firstChoiceDestinations.size()!=0) {
+                for (int i = 0; i < secondChoiceDestinations.size(); i++) {
+                   // firstChoiceDestinations.add(secondChoiceDestinations.get(i));
+                    if(firstChoiceDestinations.size() < 9) {
+                        Collections.addAll(firstChoiceDestinations, secondChoiceDestinations.get(i));
+                    }
+                }
+                if(firstChoiceDestinations.size() < 3){
+                    for (int i = 0; i < thirdChoiceDestinations.size(); i++) {
+                        if(firstChoiceDestinations.size() < 20) {
+                            Collections.addAll(firstChoiceDestinations, thirdChoiceDestinations.get(i));
+                        }
+                    }
+                }
+            }
+        if(firstChoiceDestinations.size() > 3) {
+            stringConstructor();
+        }
+
+        return firstChoiceDestinations.size();
     }
+
 
     private int stringSplitter(String closestE85Station) {
         int stationIndex = 0;
@@ -115,15 +147,15 @@ class StationHandler {
 
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < shortlistedDestinations.size(); i++) {
+        for (int i = 0; i < firstChoiceDestinations.size(); i++) {
 
-            if (i == shortlistedDestinations.size() - 1) {
-                sb.append(shortlistedDestinations.get(i).getLatitude()).append(",");
-                sb.append(shortlistedDestinations.get(i).getLongitude());
+            if (i == firstChoiceDestinations.size() - 1) {
+                sb.append(firstChoiceDestinations.get(i).getLatitude()).append(",");
+                sb.append(firstChoiceDestinations.get(i).getLongitude());
                 break;
             }
-            sb.append(shortlistedDestinations.get(i).getLatitude()).append(",");
-            sb.append(shortlistedDestinations.get(i).getLongitude()).append("|");
+            sb.append(firstChoiceDestinations.get(i).getLatitude()).append(",");
+            sb.append(firstChoiceDestinations.get(i).getLongitude()).append("|");
 
         }
         locationsToSend = sb.toString();
