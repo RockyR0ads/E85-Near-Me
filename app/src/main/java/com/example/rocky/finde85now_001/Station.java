@@ -17,8 +17,6 @@ public class Station {
 
     private ArrayList<String> closestStations = new ArrayList<>();
 
-
-
     private String company;
     private String suburb;
     private String fullAddress;
@@ -38,6 +36,7 @@ public class Station {
         this.suburb = suburb;
         this.twentyFourHour = twentyFourHour;
         this.company = company;
+
 
     }
 
@@ -111,7 +110,7 @@ public class Station {
 
     public void setFullAddress(String address){
 
-        fullAddress = address;
+        this.fullAddress = address;
 
     }
 

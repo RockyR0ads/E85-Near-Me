@@ -20,11 +20,11 @@ class StationHandler {
     private ArrayList<Station> thirdChoiceDestinations = new ArrayList<>();
     private double[] distance = new double[24];
     private static String locationsToSend = "";
-    MainActivity mn = new MainActivity();
     public ArrayList<String> addressesReturned = new ArrayList<>();
     public ArrayList<Integer> timeToArriveInTraffic = new ArrayList<>();
     public ArrayList<String> distanceToStation = new ArrayList<>();
     public ArrayList<String> timeToStation = new ArrayList<>();
+    public ArrayList<Station> closestStations = new ArrayList<>();
 
 
 
@@ -63,8 +63,8 @@ class StationHandler {
 
     }
 
-    // Parallel method trying to get same result using station class instead of hard coded array
-    public int getDistanceBetween(double userLocationLatitude, double userLocationLongitude) {
+
+    public void getDistanceBetween(double userLocationLatitude, double userLocationLongitude) {
         float[] straightLineDistanceInMeters = new float[1];
 
         for (int i = 0; i < stations.size(); i++) {
@@ -104,25 +104,23 @@ class StationHandler {
         if(firstChoiceDestinations.size() > 3) {
             stringConstructor();
         }
-
-        return firstChoiceDestinations.size();
     }
 
 
-    private int stringSplitter(String closestE85Station) {
+    private int stringSplitter(String fullAddress) {
         int stationIndex = 0;
         String suburb = "";
 
         // take only the suburb from the output
-        int commaIndex = closestE85Station.indexOf(',');
-        String street = closestE85Station.substring(0, commaIndex);
-        String restOfWord = closestE85Station.substring(commaIndex + 2);
+        int commaIndex = fullAddress.indexOf(',');
+        String street = fullAddress.substring(0, commaIndex);
+        String restOfWord = fullAddress.substring(commaIndex + 2);
         int d = restOfWord.indexOf(" ");
 
         String nextWordCheck = restOfWord.substring(d + 1, d + 3); // grab the next 2 characters after the space
         boolean hasLowerCase = !nextWordCheck.equals(nextWordCheck.toUpperCase()); // Check if the 2 letters are upper case or not
 
-        if (hasLowerCase) { // if they are not the next word must be part of the suburb
+        if (hasLowerCase) { // if they are lowercase the next word must be part of the suburb name
             String endOfString = restOfWord.substring(d + 1);
             int spaceIndex = endOfString.indexOf(" ");
             String suburbSecondPart = endOfString.substring(0, spaceIndex);
@@ -136,15 +134,18 @@ class StationHandler {
         for (int i = 0; i < stations.size(); i++) {
             String stationSuburb = stations.get(i).getSuburb();
             if (suburb.equals(stationSuburb)) { // stations match! grab that stations index
+
+                stations.get(i).setFullAddress(fullAddress);
                 return i;
             }
         }
         return stationIndex;
     }
 
-
     private void stringConstructor() {
-
+    /*
+        construct the string you need to plug into the maps API
+     */
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < firstChoiceDestinations.size(); i++) {
@@ -204,7 +205,7 @@ class StationHandler {
             }
         }
 
-        return indvidualWords[0] + " " + indvidualWords[1] + " " + indvidualWords[2] + " " + indvidualWords[3] + " " + kms + " " + timeInMinutes + " " + openOrNot;
+        return currentStation.getSuburb() + " | " + kms + " | " + timeInMinutes + " | " + openOrNot;
     }
 
 
@@ -213,9 +214,13 @@ class StationHandler {
         return stations.get(stringSplitter(station));
     }
 
-    public String getStationBySuburb(String station){
-        return stations.get(stringSplitter(station)).getSuburb();
+    public void setClosestStations(String Address){
+
+        closestStations.add(getStationByAddress(Address));
+
     }
+
+
 
 }
 

@@ -184,16 +184,20 @@ public class MainActivity extends AppCompatActivity {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
 
-                                   // userLocationLatitude = location.getLatitude();
-                                   // userLocationLongitude = location.getLongitude();
+                                  //  userLocationLatitude = location.getLatitude();
+                                 //   userLocationLongitude = location.getLongitude();
 
                                     // Moore Creek test
                                    // userLocationLatitude = -34.790970;
                                   //  userLocationLongitude = 147.025000;
 
-                                    // Bourke test
-                                    userLocationLatitude = -30.0914494;
-                                    userLocationLongitude = 145.9429902;
+                                    // Bourke (not within 500km of any station)test
+//                                    userLocationLatitude = -30.0914494;
+//                                    userLocationLongitude = 145.9429902;
+
+                                    // north shore test
+                                    userLocationLatitude = -33.763691;
+                                    userLocationLongitude = 151.21759;
 
                                     data.setText("Longitude: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
 
@@ -298,9 +302,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setMessage("There are no stations within 500Km of your position");
         builder.setIcon(android.R.drawable.ic_dialog_alert)
 
-
-
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton("exit app", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
                         dialog.cancel();
@@ -343,7 +345,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
 
-                    URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + activity.getUserLocationLatitude() + "," + activity.getUserLocationLongitude() + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
+                    URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + activity.getUserLocationLatitude() + "," + activity.getUserLocationLongitude() + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAdGvjhZOCghKo-Y7Sl-_A4dsT1L9W6QcI");
 
                 //URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
 
@@ -403,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
 
                 for(int i= 0; i < minutesToDestination.size(); i++) {
                      activity.station.setClosestStationAddress((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(i)))));
+                     activity.stationHandler.setClosestStations((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(i)))));
                 }
 
 
@@ -416,6 +419,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             return activity.station.getClosestStations().get(0);
+            
         }
 
 
