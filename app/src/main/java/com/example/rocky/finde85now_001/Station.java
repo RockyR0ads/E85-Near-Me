@@ -40,6 +40,19 @@ public class Station {
 
     }
 
+    public Station(double latitude, double longitude, int openingTime, int closingTime, String suburb, String company,String fullAddress, Boolean twentyFourHour){
+
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.openingTime = openingTime;
+        this.closingTime = closingTime;
+        this.suburb = suburb;
+        this.twentyFourHour = twentyFourHour;
+        this.company = company;
+        this.fullAddress = fullAddress;
+
+    }
+
     //Methods
 
 
@@ -58,6 +71,8 @@ public class Station {
         this.company = company;
     }
 
+
+    //old implementation
     public void setClosestStationAddress(String closestStationAddress) {
         this.closestStations.add(closestStationAddress);
     }

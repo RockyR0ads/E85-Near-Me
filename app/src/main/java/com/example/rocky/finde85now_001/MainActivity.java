@@ -184,8 +184,8 @@ public class MainActivity extends AppCompatActivity {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
 
-                                  //  userLocationLatitude = location.getLatitude();
-                                 //   userLocationLongitude = location.getLongitude();
+                                    userLocationLatitude = location.getLatitude();
+                                   userLocationLongitude = location.getLongitude();
 
                                     // Moore Creek test
                                    // userLocationLatitude = -34.790970;
@@ -196,8 +196,8 @@ public class MainActivity extends AppCompatActivity {
 //                                    userLocationLongitude = 145.9429902;
 
                                     // north shore test
-                                    userLocationLatitude = -33.763691;
-                                    userLocationLongitude = 151.21759;
+                                   // userLocationLatitude = -33.763691;
+                                   // userLocationLongitude = 151.21759;
 
                                     data.setText("Longitude: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
 
@@ -418,7 +418,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-            return activity.station.getClosestStations().get(0);
+          //  return activity.station.getClosestStations().get(0);
+            return activity.stationHandler.getClosestStations().get(0).getFullAddress();
             
         }
 
@@ -435,29 +436,29 @@ public class MainActivity extends AppCompatActivity {
                 super.onPostExecute(output);
 
                 // modify the activity's UI
-                if(activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(0)).isTheStationOpen()){
+                if(activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()){
                     activity.firstStation.setBackground(green);
                 }else{activity.firstStation.setBackground(red);}
 
-                if(activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(1)).isTheStationOpen()){
+                if(activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(1).getFullAddress()).isTheStationOpen()){
                     activity.secondStation.setBackground(green);
                 }else{activity.secondStation.setBackground(red);}
 
-                if(activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(2)).isTheStationOpen()){
+                if(activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(2).getFullAddress()).isTheStationOpen()){
                     activity.thirdStation.setBackground(green);
                 }else{activity.thirdStation.setBackground(red);}
 
                 activity.firstStation.setVisibility(View.VISIBLE);
-                activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStations().get(0)));
+                activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(0).getFullAddress()));
                 activity.secondStation.setVisibility(View.VISIBLE);
-                activity.secondStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStations().get(1)));
+                activity.secondStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(1).getFullAddress()));
                 activity.thirdStation.setVisibility(View.VISIBLE);
-                activity.thirdStation.setText(activity.stationHandler.snmStringConstruct(activity.station.getClosestStations().get(2)));
+                activity.thirdStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(2).getFullAddress()));
 
                 activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
 
             } else if(!output.equals("FAIL")) {
-                    if (activity.stationHandler.getStationByAddress(activity.station.getClosestStations().get(0)).isTheStationOpen()) { // station is open send the user to maps
+                    if (activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()) { // station is open send the user to maps
                         activity.launchMaps(activity.station.getClosestStations().get(0));
                         activity.finish();
 

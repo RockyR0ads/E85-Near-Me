@@ -40,10 +40,10 @@ class StationHandler {
         stations.add(new Station(-33.810202, 151.032491, 600, 2200, "Rydalmere", "United", false));
         stations.add(new Station(-33.861967, 151.167653, 0,   2400, "Rozelle","United",  true));
         stations.add(new Station(-33.901910, 151.208229, 0,   2400, "Waterloo","United", true));
-        stations.add(new Station(-33.901877, 151.037178, 500, 2400, "Yagoona","United", false));
+        stations.add(new Station(-33.901877, 151.037178, 500, 2400, "Yagoona","United","100 Rookwood Rd, Yagoona NSW 2199, Australia", false));
         stations.add(new Station(-33.755790, 151.282715, 500, 2400, "Dee Why","United", false));
         stations.add(new Station(-33.746039, 150.622454, 600, 2100, "Blaxland","United", false));
-        stations.add(new Station(-33.899258, 151.036924, 600, 2200, "Yagoona1","United", false));
+        stations.add(new Station(-33.899258, 151.036924, 600, 2200, "Yagoona","United","45B Rookwood Rd, Yagoona NSW 2199, Australia", false));
         stations.add(new Station(-33.872234, 150.900077, 600, 2200, "Prairiewood","United", false));
         stations.add(new Station(-34.030073, 150.831892, 0,   2400, "Minto","United", true));
         stations.add(new Station(-33.680160, 151.225010, 700, 2200, "Terrey Hills","United", false));
@@ -133,9 +133,13 @@ class StationHandler {
 
         for (int i = 0; i < stations.size(); i++) {
             String stationSuburb = stations.get(i).getSuburb();
-            if (suburb.equals(stationSuburb)) { // stations match! grab that stations index
+            if (stations.get(i).getFullAddress() == null) {
+                    if (suburb.equals(stationSuburb)) { // stations match! grab that stations index
 
-                stations.get(i).setFullAddress(fullAddress);
+                        stations.get(i).setFullAddress(fullAddress);
+                        return i;
+                    }
+            }else if(fullAddress.equals(stations.get(i).getFullAddress())){
                 return i;
             }
         }
@@ -218,6 +222,10 @@ class StationHandler {
 
         closestStations.add(getStationByAddress(Address));
 
+    }
+
+    public ArrayList<Station> getClosestStations() {
+        return closestStations;
     }
 
 
