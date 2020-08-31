@@ -74,8 +74,8 @@
         android:id="@+id/firstStation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:width="380dp"
-        android:layout_centerHorizontal="true"
+        android:width="330dp"
+
         android:layout_marginTop="50dp"
         android:textSize="20sp"
         android:visibility="invisible"
@@ -89,8 +89,8 @@
         android:id="@+id/secondStation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:width="380dp"
-        android:layout_centerHorizontal="true"
+        android:width="330dp"
+
         android:layout_marginTop="10dp"
         android:textSize="20sp"
         android:visibility="invisible"
@@ -104,9 +104,9 @@
         android:id="@+id/thirdStation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:width="380dp"
+        android:width="330dp"
         android:visibility="invisible"
-        android:layout_centerHorizontal="true"
+
         android:layout_marginTop="10dp"
         android:textSize="20sp"
         android:layout_below="@id/secondStation"
@@ -114,6 +114,53 @@
         android:background="@drawable/btn_rounded"
         android:height="50dp"
         android:text=" " />
+
+    <Button
+        android:id="@+id/thirdStationDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:layout_marginRight="5dp"
+        android:layout_below="@id/secondStation"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_red"
+        android:height="50dp"
+        android:text="Details" />
+    <Button
+        android:id="@+id/secondStationDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:layout_marginRight="5dp"
+        android:layout_below="@id/firstStation"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_red"
+        android:height="50dp"
+        android:text="Details" />
+    <Button
+        android:id="@+id/firstStationDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="50dp"
+        android:textSize="20sp"
+        android:layout_marginRight="5dp"
+
+        android:layout_below="@+id/stationsNearMe"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_red"
+        android:height="50dp"
+        android:text="Details" />
 
     <ProgressBar
 

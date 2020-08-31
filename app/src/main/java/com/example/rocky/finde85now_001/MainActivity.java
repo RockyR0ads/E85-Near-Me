@@ -1,7 +1,6 @@
 package com.example.rocky.finde85now_001;
 
 import android.animation.ObjectAnimator;
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
+import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -17,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.Button;
@@ -53,18 +54,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
-    Button click;
-    Button stationsNearMe;
-    Button firstStation;
-    Button secondStation;
-    Button thirdStation;
-    TextView data;
-    TextView error;
-    TextView errorCheck;
-    TextView stateWatch;
+    Button click,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails;
+    TextView data, error, errorCheck, stateWatch;
 
-    private double userLocationLongitude;
-    private double userLocationLatitude;
+    private double userLocationLongitude, userLocationLatitude;
     Context context;
     private ProgressBar progressBar;
 
@@ -105,6 +98,9 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         errorCheck = findViewById(R.id.errorBoi);
         stateWatch = findViewById(R.id.state);
+        firstStationDetails = findViewById(R.id.firstStationDetails);
+        secondStationDetails = findViewById(R.id.secondStationDetails);
+        thirdStationDetails = findViewById(R.id.thirdStationDetails);
 
         stationHandler = new StationHandler();
         stationHandler.initialiseStations();
@@ -160,6 +156,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 launchMaps(station.getClosestStations().get(2));
+            }
+        });
+
+        firstStationDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               buildDetailsDialog(stationHandler.getClosestStations().get(0));
+            }
+        });
+        secondStationDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildDetailsDialog(stationHandler.getClosestStations().get(1));
+            }
+        });
+        thirdStationDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildDetailsDialog(stationHandler.getClosestStations().get(2));
             }
         });
     }
@@ -262,6 +277,62 @@ public class MainActivity extends AppCompatActivity {
         launchMap.setPackage("com.google.android.apps.maps"); // choose the google maps app
         this.startActivity(launchMap);
         this.finishAffinity();
+    }
+
+    private void buildDetailsDialog(Station s){
+
+        TextView name,open,closed,address,kmsView,time;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View mView = inflater.inflate(R.layout.details_dialog, null);
+        final Station station = s;
+        String kms = " ";
+        String timeInMinutes = " ";
+
+        name = mView.findViewById(R.id.stationName);
+        open = mView.findViewById(R.id.openTime);
+        closed = mView.findViewById(R.id.closeTime);
+        address = mView.findViewById(R.id.address);
+        kmsView = mView.findViewById(R.id.kms);
+        time = mView.findViewById(R.id.timeToStation);
+
+        for(int i = 0; i < stationHandler.addressesReturned.size(); i ++){
+            if(s.getFullAddress().equals(stationHandler.addressesReturned.get(i))){
+              kms = stationHandler.distanceToStation.get(i);
+               timeInMinutes = stationHandler.timeToStation.get(i);
+            }
+        }
+
+        name.setText("Station: " + s.getCompany() + " " + s.getSuburb());
+        open.setText("Open Time: " + s.getOpeningTime());
+        closed.setText("Close Time: " + s.getClosingTime());
+        address.setText("Address: " + s.getFullAddress());
+        kmsView.setText("Distance to Station: " + kms);
+        time.setText("Time to Station: " + timeInMinutes);
+
+        builder.setView(mView);
+        builder.setMessage("Station Details");
+        builder.setIcon(android.R.drawable.btn_star)
+
+                .setPositiveButton("Navigate", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // do what when you click add
+                    launchMaps(station.getFullAddress());
+
+                    }
+                })
+                .setNegativeButton("Return", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                        dialog.cancel();
+
+                    }
+                });
+
+        // Create the AlertDialog object and return it
+        AlertDialog builder1 = builder.create();
+        builder1.show();
+
     }
 
     private void buildDialog(){
@@ -449,11 +520,16 @@ public class MainActivity extends AppCompatActivity {
                 }else{activity.thirdStation.setBackground(red);}
 
                 activity.firstStation.setVisibility(View.VISIBLE);
+                activity.firstStationDetails.setVisibility(View.VISIBLE);
                 activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(0).getFullAddress()));
+
                 activity.secondStation.setVisibility(View.VISIBLE);
                 activity.secondStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(1).getFullAddress()));
+                activity.secondStationDetails.setVisibility(View.VISIBLE);
+
                 activity.thirdStation.setVisibility(View.VISIBLE);
                 activity.thirdStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(2).getFullAddress()));
+                activity.thirdStationDetails.setVisibility(View.VISIBLE);
 
                 activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
 
