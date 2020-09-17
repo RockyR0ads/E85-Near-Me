@@ -6,8 +6,10 @@ import android.location.Location;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 
 class StationHandler {
@@ -187,6 +189,7 @@ class StationHandler {
 
     }
 
+
     public String snmStringConstruct(String station){
 
         String[] indvidualWords = station.split("\\s+");
@@ -211,8 +214,6 @@ class StationHandler {
 
         return currentStation.getSuburb() + " | " + kms + " | " + timeInMinutes + " | " + openOrNot;
     }
-
-
 
     public Station getStationByAddress(String station) {
         return stations.get(stringSplitter(station));

@@ -296,6 +296,8 @@ public class MainActivity extends AppCompatActivity {
         kmsView = mView.findViewById(R.id.kms);
         time = mView.findViewById(R.id.timeToStation);
 
+
+
         for(int i = 0; i < stationHandler.addressesReturned.size(); i ++){
             if(s.getFullAddress().equals(stationHandler.addressesReturned.get(i))){
               kms = stationHandler.distanceToStation.get(i);
@@ -304,11 +306,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         name.setText("Station: " + s.getCompany() + " " + s.getSuburb());
-        open.setText("Open Time: " + s.getOpeningTime());
-        closed.setText("Close Time: " + s.getClosingTime());
+        open.setText("Open Time: " + s.changeTimeFormat(s.getOpeningTime()));
+        closed.setText("Close Time: " + s.changeTimeFormat(s.getClosingTime()));
         address.setText("Address: " + s.getFullAddress());
         kmsView.setText("Distance to Station: " + kms);
         time.setText("Time to Station: " + timeInMinutes);
+
+        // cover the case of 24/7 stations
+        if(s.getOpeningTime()==0 && s.getClosingTime()==2400){
+            open.setText("Opening Time: " + "24 Hours");
+            closed.setText("Closing Time: " + "24 Hours");
+        }
 
         builder.setView(mView);
         builder.setMessage("Station Details");

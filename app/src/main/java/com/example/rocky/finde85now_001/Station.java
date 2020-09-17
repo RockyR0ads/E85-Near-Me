@@ -167,5 +167,28 @@ public class Station {
         return timeNow > this.openingTime && timeNow < this.closingTime;
     }
 
+    public String changeTimeFormat(int time) {
+
+        String convertedTime="";
+        String stringTime="";
+
+        try {
+
+            stringTime = String.valueOf(time);
+            if(stringTime.length() >)
+            stringTime = stringTime.replaceAll(".(?!$)", "$0:");
+           // String _24HourTime = "22:15";
+            SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm");
+            SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a");
+            Date _24HourDt = _24HourSDF.parse(stringTime);
+            convertedTime = _12HourSDF.format(_24HourDt);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        return convertedTime;
+    }
+
 
 }
