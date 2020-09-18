@@ -175,8 +175,11 @@ public class Station {
         try {
 
             stringTime = String.valueOf(time);
-            if(stringTime.length() >)
-            stringTime = stringTime.replaceAll(".(?!$)", "$0:");
+            if(stringTime.length() > 3) {
+                stringTime = stringTime.replaceAll("..(?!$)", "$0:");
+            }else{
+                stringTime = stringTime.replaceAll(".(?!$)", "$0:");
+            }
            // String _24HourTime = "22:15";
             SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm");
             SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a");

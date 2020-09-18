@@ -193,11 +193,12 @@ class StationHandler {
     public String snmStringConstruct(String station){
 
         String[] indvidualWords = station.split("\\s+");
-        String kms = " ";
+        Station currentStation = getStationByAddress(station);
+       // String kms = " ";
         String timeInMinutes = " ";
         String openOrNot;
+        String company = currentStation.getCompany();
 
-        Station currentStation = getStationByAddress(station);
 
         if(currentStation.isTheStationOpen()){
             openOrNot = "OPEN";
@@ -207,12 +208,13 @@ class StationHandler {
 
         for(int i = 0; i < addressesReturned.size(); i ++){
             if(station.equals(addressesReturned.get(i))){
-                kms = distanceToStation.get(i);
+                //kms = distanceToStation.get(i);
                 timeInMinutes = timeToStation.get(i);
+
             }
         }
 
-        return currentStation.getSuburb() + " | " + kms + " | " + timeInMinutes + " | " + openOrNot;
+        return currentStation.getSuburb() + " " + company + " | "+ timeInMinutes + " | " + openOrNot;
     }
 
     public Station getStationByAddress(String station) {

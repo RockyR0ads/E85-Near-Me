@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
-    Button click,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails;
+    Button click,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails,fourthStation, fifthStation, moreStations,fourthStationDetails,fifthStationDetails;
     TextView data, error, errorCheck, stateWatch;
 
     private double userLocationLongitude, userLocationLatitude;
@@ -94,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
         firstStation = findViewById(R.id.firstStation);
         secondStation = findViewById(R.id.secondStation);
         thirdStation = findViewById(R.id.thirdStation);
+        fourthStation = findViewById(R.id.fourthStation);
+        fifthStation = findViewById(R.id.fifthStation);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         progressBar = findViewById(R.id.progressBar);
         errorCheck = findViewById(R.id.errorBoi);
@@ -101,11 +103,17 @@ public class MainActivity extends AppCompatActivity {
         firstStationDetails = findViewById(R.id.firstStationDetails);
         secondStationDetails = findViewById(R.id.secondStationDetails);
         thirdStationDetails = findViewById(R.id.thirdStationDetails);
+        fourthStationDetails = findViewById(R.id.fourthStationDetails);
+        fifthStationDetails = findViewById(R.id.fifthStationDetails);
+        moreStations = findViewById(R.id.moreStationsNearMe);
 
         stationHandler = new StationHandler();
         stationHandler.initialiseStations();
         station = new Station();
         res = getResources();
+
+        final Drawable red = res.getDrawable(R.drawable.btn_rounded_red);
+        final Drawable green = res.getDrawable(R.drawable.btn_rounded_green);
 
         stateWatch.setText(this.getLifecycle().getCurrentState().toString());
 
@@ -135,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 animateProgressBar();
                 asyncTask.execute();
 
+
             }
         });
 
@@ -158,6 +167,18 @@ public class MainActivity extends AppCompatActivity {
                 launchMaps(station.getClosestStations().get(2));
             }
         });
+        fourthStation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchMaps(station.getClosestStations().get(3));
+            }
+        });
+        fifthStation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchMaps(station.getClosestStations().get(4));
+            }
+        });
 
         firstStationDetails.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -177,7 +198,82 @@ public class MainActivity extends AppCompatActivity {
                 buildDetailsDialog(stationHandler.getClosestStations().get(2));
             }
         });
+        fourthStationDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildDetailsDialog(stationHandler.getClosestStations().get(3));
+            }
+        });
+        fifthStationDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildDetailsDialog(stationHandler.getClosestStations().get(4));
+            }
+        });
+
+        moreStations.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                moreStations.setVisibility(View.INVISIBLE);
+                fourthStation.setVisibility(View.VISIBLE);
+                fifthStation.setVisibility(View.VISIBLE);
+                fourthStationDetails.setVisibility(View.VISIBLE);
+                fifthStationDetails.setVisibility(View.VISIBLE);
+
+                if(stationHandler.getStationByAddress(stationHandler.getClosestStations().get(3).getFullAddress()).isTheStationOpen()){
+                    fourthStation.setBackground(green);
+                }else{
+                    fourthStation.setBackground(red);
+                }
+
+                if(stationHandler.getStationByAddress(stationHandler.getClosestStations().get(4).getFullAddress()).isTheStationOpen()){
+                    fifthStation.setBackground(green);
+                }else{
+                    fifthStation.setBackground(red);
+                }
+
+                fourthStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(3).getFullAddress()));
+                fifthStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(4).getFullAddress()));
+            }
+        });
     }
+    private void prepareSNMUI(){
+        final Drawable red = res.getDrawable(R.drawable.btn_rounded_red);
+        final Drawable green = res.getDrawable(R.drawable.btn_rounded_green);
+
+        // modify the activity's UI
+        if(stationHandler.getStationByAddress(stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()){
+            firstStation.setBackground(green);
+        }else{firstStation.setBackground(red);}
+
+        if(stationHandler.getStationByAddress(stationHandler.getClosestStations().get(1).getFullAddress()).isTheStationOpen()){
+            secondStation.setBackground(green);
+        }else{secondStation.setBackground(red);}
+
+        if(stationHandler.getStationByAddress(stationHandler.getClosestStations().get(2).getFullAddress()).isTheStationOpen()){
+            thirdStation.setBackground(green);
+        }else{thirdStation.setBackground(red);}
+
+        firstStation.setVisibility(View.VISIBLE);
+        firstStationDetails.setVisibility(View.VISIBLE);
+        firstStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(0).getFullAddress()));
+
+        secondStation.setVisibility(View.VISIBLE);
+        secondStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(1).getFullAddress()));
+        secondStationDetails.setVisibility(View.VISIBLE);
+
+        thirdStation.setVisibility(View.VISIBLE);
+        thirdStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(2).getFullAddress()));
+        thirdStationDetails.setVisibility(View.VISIBLE);
+
+        if(stationHandler.getClosestStations().size() > 4){
+            moreStations.setVisibility(View.VISIBLE);
+        }
+
+        stateWatch.setText("state:" + getLifecycle().getCurrentState().toString());
+    }
+
 
     private void animateProgressBar() {
         ObjectAnimator progressAnimator = ObjectAnimator.ofInt(progressBar, "progress", 0, 1000);
@@ -344,6 +440,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void buildDialog(){
+
 
         Station s = stationHandler.getStationByAddress(station.getClosestStations().get(0));
 
@@ -513,33 +610,7 @@ public class MainActivity extends AppCompatActivity {
 
             if ((!output.equals("FAIL")) && stopMapsLaunching) { // user wants to see the 3 closest stations
                 super.onPostExecute(output);
-
-                // modify the activity's UI
-                if(activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()){
-                    activity.firstStation.setBackground(green);
-                }else{activity.firstStation.setBackground(red);}
-
-                if(activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(1).getFullAddress()).isTheStationOpen()){
-                    activity.secondStation.setBackground(green);
-                }else{activity.secondStation.setBackground(red);}
-
-                if(activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(2).getFullAddress()).isTheStationOpen()){
-                    activity.thirdStation.setBackground(green);
-                }else{activity.thirdStation.setBackground(red);}
-
-                activity.firstStation.setVisibility(View.VISIBLE);
-                activity.firstStationDetails.setVisibility(View.VISIBLE);
-                activity.firstStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(0).getFullAddress()));
-
-                activity.secondStation.setVisibility(View.VISIBLE);
-                activity.secondStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(1).getFullAddress()));
-                activity.secondStationDetails.setVisibility(View.VISIBLE);
-
-                activity.thirdStation.setVisibility(View.VISIBLE);
-                activity.thirdStation.setText(activity.stationHandler.snmStringConstruct(activity.stationHandler.getClosestStations().get(2).getFullAddress()));
-                activity.thirdStationDetails.setVisibility(View.VISIBLE);
-
-                activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
+                activity.prepareSNMUI();
 
             } else if(!output.equals("FAIL")) {
                     if (activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()) { // station is open send the user to maps
