@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
-import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -26,6 +25,13 @@ import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONArray;
@@ -43,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     /*
     ISSUES TO FIX
@@ -53,8 +59,9 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
+    private GoogleMap mMap;
 
-    Button click,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails,fourthStation, fifthStation, moreStations,fourthStationDetails,fifthStationDetails;
+    Button findClosestStation,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails,fourthStation, fifthStation, moreStations,fourthStationDetails,fifthStationDetails,navigate;
     TextView data, error, errorCheck, stateWatch;
 
     private double userLocationLongitude, userLocationLatitude;
@@ -87,7 +94,13 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        click = findViewById(R.id.button);
+         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+
+        //mapFragment.getMapAsync(this);
+        mapFragment.getView().setVisibility(View.INVISIBLE);
+
+        findClosestStation = findViewById(R.id.button);
         data = findViewById(R.id.fetchedData);
         error = findViewById(R.id.Error);
         stationsNearMe = findViewById(R.id.stationsNearMe);
@@ -106,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
         fourthStationDetails = findViewById(R.id.fourthStationDetails);
         fifthStationDetails = findViewById(R.id.fifthStationDetails);
         moreStations = findViewById(R.id.moreStationsNearMe);
+        navigate = findViewById(R.id.navigate);
 
         stationHandler = new StationHandler();
         stationHandler.initialiseStations();
@@ -122,14 +136,16 @@ public class MainActivity extends AppCompatActivity {
         this.stateWatch.setText(this.getLifecycle().getCurrentState().toString());
 
         // FIND CLOSEST STATION
-        click.setOnClickListener(new View.OnClickListener() {
+        findClosestStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+              //  mapFragment.getView().setVisibility(View.VISIBLE);
                 stopMapsLaunching = false;
                 HttpHandler asyncTask = new HttpHandler(MainActivity.this);
                 asyncTask.execute();
 
-
+                mapFragment.getMapAsync(MainActivity.this);
+                mapFragment.getView().setVisibility(View.VISIBLE);
             }
         });
 
@@ -143,6 +159,15 @@ public class MainActivity extends AppCompatActivity {
                 animateProgressBar();
                 asyncTask.execute();
 
+
+            }
+        });
+
+        navigate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                launchMaps(station.getClosestStations().get(0));
 
             }
         });
@@ -238,6 +263,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+
     private void prepareSNMUI(){
         final Drawable red = res.getDrawable(R.drawable.btn_rounded_red);
         final Drawable green = res.getDrawable(R.drawable.btn_rounded_green);
@@ -439,6 +467,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+
+    private void showMapUI(){
+
+
+        navigate.setVisibility(View.VISIBLE);
+
+
+    }
+
     private void buildDialog(){
 
 
@@ -497,6 +535,24 @@ public class MainActivity extends AppCompatActivity {
         // Create the AlertDialog object and return it
         AlertDialog builder1 = builder.create();
         builder1.show();
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        LatLng station;
+
+        LatLng aus = new LatLng(-25.3455545, 131.0369615); // literally Uluru lmao
+
+        Station s = stationHandler.getClosestStations().get(0);
+        //station = new LatLng(stationHandler.getClosestStations().get(0).getLatitude(), stationHandler.getClosestStations().get(0).getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(aus,3.5f));
+
+        mMap.addMarker(new MarkerOptions()
+                .position(aus)
+                .title("Marker in Sydney"));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(aus,15));
 
     }
 
@@ -614,8 +670,11 @@ public class MainActivity extends AppCompatActivity {
 
             } else if(!output.equals("FAIL")) {
                     if (activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()) { // station is open send the user to maps
-                        activity.launchMaps(activity.station.getClosestStations().get(0));
-                        activity.finish();
+                       // activity.launchMaps(activity.station.getClosestStations().get(0));
+
+                      //  activity.finish();
+                        activity.showMapUI();
+
 
                     } else { // station is closed
                             activity.buildDialog();
