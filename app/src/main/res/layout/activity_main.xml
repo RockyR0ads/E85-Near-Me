@@ -12,7 +12,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="400dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="400dp"
+        android:layout_marginTop="380dp"
 
         android:layout_height="250dp"
         tools:context="com.example.rocky.finde85now_001.MainActivity" />
@@ -93,7 +93,7 @@
         android:textStyle="bold"
         android:textColor="#FFFFFF"
         android:background="@drawable/btn_rounded_green"
-        android:height="100dp"
+        android:height="80dp"
         android:text="NAVIGATE!" />
 
     <Button

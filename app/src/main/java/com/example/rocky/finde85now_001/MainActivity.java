@@ -67,8 +67,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double userLocationLongitude, userLocationLatitude;
     Context context;
     private ProgressBar progressBar;
-
-
+    SupportMapFragment mapFragment;
+    LatLng closestStation;
     private static Boolean stopMapsLaunching = false;
 
 
@@ -94,10 +94,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         setContentView(R.layout.activity_main);
 
-         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
-        //mapFragment.getMapAsync(this);
+
         mapFragment.getView().setVisibility(View.INVISIBLE);
 
         findClosestStation = findViewById(R.id.button);
@@ -471,7 +470,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void showMapUI(){
 
-
+        mapFragment.getMapAsync(MainActivity.this);
+        mapFragment.getView().setVisibility(View.VISIBLE);
         navigate.setVisibility(View.VISIBLE);
 
 
@@ -540,19 +540,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        LatLng station;
 
+        mMap = googleMap;
         LatLng aus = new LatLng(-25.3455545, 131.0369615); // literally Uluru lmao
 
-        Station s = stationHandler.getClosestStations().get(0);
-        //station = new LatLng(stationHandler.getClosestStations().get(0).getLatitude(), stationHandler.getClosestStations().get(0).getLongitude());
+        mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(aus,3.5f));
 
-        mMap.addMarker(new MarkerOptions()
-                .position(aus)
-                .title("Marker in Sydney"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(aus,15));
+        if(closestStation!=null){
+            mMap.addMarker(new MarkerOptions()
+                    .position(closestStation)
+                    .title("Marker in Sydney"));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(closestStation,15));
+            mMap.setTrafficEnabled(true);
+
+        }
+
 
     }
 
@@ -671,7 +674,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             } else if(!output.equals("FAIL")) {
                     if (activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()) { // station is open send the user to maps
                        // activity.launchMaps(activity.station.getClosestStations().get(0));
-
+                        activity.closestStation = new LatLng(activity.stationHandler.getClosestStations().get(0).getLatitude(),activity.stationHandler.getClosestStations().get(0).getLongitude());
                       //  activity.finish();
                         activity.showMapUI();
 
