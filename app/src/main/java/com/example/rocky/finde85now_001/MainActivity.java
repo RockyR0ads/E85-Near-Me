@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private boolean mLocationPermissionGranted;
+    private boolean mLocationPermissionGranted,findClosestStationPressed = false;
     private GoogleMap mMap;
 
     Button findClosestStation,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails,fourthStation, fifthStation, moreStations,fourthStationDetails,fifthStationDetails,navigate;
@@ -95,8 +95,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-
-
         mapFragment.getView().setVisibility(View.INVISIBLE);
 
         findClosestStation = findViewById(R.id.button);
@@ -138,13 +136,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         findClosestStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-              //  mapFragment.getView().setVisibility(View.VISIBLE);
+
+               
+                    hideSNM();
+
+
                 stopMapsLaunching = false;
+                findClosestStationPressed = true;
                 HttpHandler asyncTask = new HttpHandler(MainActivity.this);
+                progressBar.setVisibility(View.VISIBLE);
+                animateProgressBar();
                 asyncTask.execute();
 
-                mapFragment.getMapAsync(MainActivity.this);
-                mapFragment.getView().setVisibility(View.VISIBLE);
             }
         });
 
@@ -152,6 +155,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         stationsNearMe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(findClosestStationPressed){
+                    mapFragment.getView().setVisibility(View.GONE);
+                    navigate.setVisibility(View.GONE);
+                }
                 stopMapsLaunching = true;
                 HttpHandler asyncTask = new HttpHandler(MainActivity.this);
                 progressBar.setVisibility(View.VISIBLE);
@@ -264,6 +272,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+    private void hideSNM(){
+        firstStation.setVisibility(View.GONE);
+        firstStationDetails.setVisibility(View.GONE);
+        secondStation.setVisibility(View.GONE);
+        secondStationDetails.setVisibility(View.GONE);
+        thirdStation.setVisibility(View.GONE);
+        thirdStationDetails.setVisibility(View.GONE);
+        moreStations.setVisibility(View.GONE);
+
+        if(fourthStation.getVisibility() == View.VISIBLE){
+            fourthStation.setVisibility(View.GONE);
+            fifthStation.setVisibility(View.GONE);
+            fourthStationDetails.setVisibility(View.GONE);
+            fifthStationDetails.setVisibility(View.GONE);
+
+        }
+    }
 
     private void prepareSNMUI(){
         final Drawable red = res.getDrawable(R.drawable.btn_rounded_red);
@@ -473,7 +498,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(MainActivity.this);
         mapFragment.getView().setVisibility(View.VISIBLE);
         navigate.setVisibility(View.VISIBLE);
-
 
     }
 
