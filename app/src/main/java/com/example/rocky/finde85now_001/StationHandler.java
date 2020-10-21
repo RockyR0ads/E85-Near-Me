@@ -45,7 +45,7 @@ class StationHandler {
         stations.add(new Station(-33.901877, 151.037178, 500, 2400, "Yagoona","United","100 Rookwood Rd, Yagoona NSW 2199, Australia", false));
         stations.add(new Station(-33.755790, 151.282715, 500, 2400, "Dee Why","United", false));
         stations.add(new Station(-33.746039, 150.622454, 600, 2100, "Blaxland","United", false));
-        stations.add(new Station(-33.899258, 151.036924, 600, 2200, "Yagoona","United","45B Rookwood Rd, Yagoona NSW 2199, Australia", false));
+        stations.add(new Station(-33.899258, 151.036924, 600, 2200, "Yagoona South","United","45B Rookwood Rd, Yagoona NSW 2199, Australia", false));
         stations.add(new Station(-33.872234, 150.900077, 600, 2200, "Prairiewood","United", false));
         stations.add(new Station(-34.030073, 150.831892, 0,   2400, "Minto","United", true));
         stations.add(new Station(-33.680160, 151.225010, 700, 2200, "Terrey Hills","United", false));
@@ -214,7 +214,7 @@ class StationHandler {
             }
         }
 
-        return currentStation.getSuburb() + " " + company + " | "+ timeInMinutes + " | " + openOrNot;
+        return currentStation.getSuburb() + " " + " | "+ timeInMinutes + " | " + openOrNot;
     }
 
     public Station getStationByAddress(String station) {

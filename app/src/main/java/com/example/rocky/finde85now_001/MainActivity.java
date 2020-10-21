@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean mLocationPermissionGranted,findClosestStationPressed = false;
     private GoogleMap mMap;
 
-    Button findClosestStation,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails,fourthStation, fifthStation, moreStations,fourthStationDetails,fifthStationDetails,navigate;
+    Button findClosestStation,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails,fourthStation, fifthStation, moreStations,fourthStationDetails,fifthStationDetails,navigate,fcsDetails;
     TextView data, error, errorCheck, stateWatch;
 
     private double userLocationLongitude, userLocationLatitude;
@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         fifthStationDetails = findViewById(R.id.fifthStationDetails);
         moreStations = findViewById(R.id.moreStationsNearMe);
         navigate = findViewById(R.id.navigate);
+        fcsDetails = findViewById(R.id.closestStationDetails);
 
         stationHandler = new StationHandler();
         stationHandler.initialiseStations();
@@ -159,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if(findClosestStationPressed){
                     mapFragment.getView().setVisibility(View.GONE);
                     navigate.setVisibility(View.GONE);
+                    fcsDetails.setVisibility(View.GONE);
                 }
                 stopMapsLaunching = true;
                 HttpHandler asyncTask = new HttpHandler(MainActivity.this);
@@ -267,6 +269,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 fourthStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(3).getFullAddress()));
                 fifthStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(4).getFullAddress()));
+            }
+        });
+
+        fcsDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buildDetailsDialog(stationHandler.getClosestStations().get(0));
             }
         });
     }
@@ -498,7 +507,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(MainActivity.this);
         mapFragment.getView().setVisibility(View.VISIBLE);
         navigate.setVisibility(View.VISIBLE);
-
+        fcsDetails.setVisibility(View.VISIBLE);
     }
 
     private void buildDialog(){
