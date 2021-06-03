@@ -87,8 +87,8 @@ class StationHandler {
             String distanceInStraightLine = Double.toString(distance[i]);
             Log.d("distanceInStraightLine", distanceInStraightLine);
         }
-            // Logic to decide to ensure at least 3 stations are always found
-            while(firstChoiceDestinations.size() < 3 && firstChoiceDestinations.size()!=0) {
+            // THIS NEEDS TO FUCK OFF
+            while(firstChoiceDestinations.size() < 3) {
                 for (int i = 0; i < secondChoiceDestinations.size(); i++) {
                    // firstChoiceDestinations.add(secondChoiceDestinations.get(i));
                     if(firstChoiceDestinations.size() < 9) {

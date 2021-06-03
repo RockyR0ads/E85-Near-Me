@@ -45,8 +45,11 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import static java.io.FileDescriptor.in;
 
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -59,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted,findClosestStationPressed = false;
-    private GoogleMap mMap;
+
 
     Button findClosestStation,stationsNearMe,firstStation,secondStation,thirdStation,firstStationDetails,secondStationDetails, thirdStationDetails,fourthStation, fifthStation, moreStations,fourthStationDetails,fifthStationDetails,navigate,fcsDetails;
     TextView data, error, errorCheck, stateWatch;
@@ -138,10 +141,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
 
-               
-                    hideSNM();
-
-
+                hideSNM();
                 stopMapsLaunching = false;
                 findClosestStationPressed = true;
                 HttpHandler asyncTask = new HttpHandler(MainActivity.this);
@@ -278,8 +278,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 buildDetailsDialog(stationHandler.getClosestStations().get(0));
             }
         });
-    }
 
+    }
 
     private void hideSNM(){
         firstStation.setVisibility(View.GONE);
@@ -356,8 +356,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
 
-                                    userLocationLatitude = location.getLatitude();
-                                   userLocationLongitude = location.getLongitude();
+                                    //userLocationLatitude = location.getLatitude();
+                                   //userLocationLongitude = location.getLongitude();
 
                                     // Moore Creek test
                                    // userLocationLatitude = -34.790970;
@@ -370,6 +370,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     // north shore test
                                    // userLocationLatitude = -33.763691;
                                    // userLocationLongitude = 151.21759;
+
+                                    // north NSW Test
+                                    userLocationLatitude = -32.334603;
+                                     userLocationLongitude = 151.291866;
+
 
                                     data.setText("Longitude: " + userLocationLongitude + "\nLatitude: " + userLocationLatitude);
 
@@ -574,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-        mMap = googleMap;
+        GoogleMap mMap = googleMap;
         LatLng aus = new LatLng(-25.3455545, 131.0369615); // literally Uluru lmao
 
         mMap.getUiSettings().setZoomControlsEnabled(true);
@@ -647,8 +652,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 JSONArray elements = row0.getJSONArray("elements");
 
                 String test = rowsArray.toString();
-
-
 
                 for (int i = 0; i < elements.length(); ++i) {
 
