@@ -7,22 +7,32 @@
     android:background="@color/background"
     tools:context="com.example.rocky.finde85now_001.MainActivity">
 
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="400dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="380dp"
+
+        android:layout_height="250dp"
+        tools:context="com.example.rocky.finde85now_001.MainActivity" />
+
      <TextView
             android:id="@+id/fetchedData"
-            android:layout_width="match_parent"
+            android:layout_width="250dp"
             android:layout_height="60dp"
             android:hint="Current position"
             android:textColor="@color/secondaryTextColor"
-            android:layout_marginTop="550dp"
+            android:layout_marginTop="0dp"
             android:padding="5dp"
             android:textSize="24sp" />
 
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/Error"
             android:layout_width="match_parent"
-            android:layout_below="@id/fetchedData"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginLeft="250dp"
             android:layout_height="match_parent"
             android:textColor="@color/colorPrimary"
             android:textSize="50dp"
@@ -33,7 +43,7 @@
         android:id="@+id/state"
         android:layout_width="match_parent"
         android:layout_below="@id/fetchedData"
-        android:layout_marginBottom="100dp"
+        android:padding="5dp"
         android:layout_height="match_parent"
         android:textColor="@color/colorAccent"
         android:textSize="20dp"
@@ -46,7 +56,7 @@
         android:layout_height="wrap_content"
         android:width="300dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="110dp"
         android:textSize="30dp"
         android:textStyle="bold"
         android:textColor="#FFFFFF"
@@ -71,13 +81,42 @@
         android:text="STATIONS NEAR ME" />
 
     <Button
+        android:id="@+id/navigate"
+        android:layout_width="245dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="10dp"
+        android:textSize="30sp"
+        android:visibility="invisible"
+        android:layout_below="@id/map"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_green"
+        android:height="80dp"
+        android:text="NAVIGATE!" />
+
+    <Button
+        android:id="@+id/moreStationsNearMe"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/thirdStation"
+        android:layout_height="80dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp"
+        android:textSize="30dp"
+        android:visibility="invisible"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded"
+        android:height="100dp"
+        android:text="MORE OPTIONS?" />
+
+    <Button
         android:id="@+id/firstStation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:width="300dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:textSize="15sp"
+        android:width="330dp"
+        android:layout_marginTop="30dp"
+        android:textSize="20sp"
         android:visibility="invisible"
         android:layout_below="@id/stationsNearMe"
         android:textColor="#FFFFFF"
@@ -89,10 +128,10 @@
         android:id="@+id/secondStation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:width="300dp"
-        android:layout_centerHorizontal="true"
+        android:width="330dp"
+
         android:layout_marginTop="10dp"
-        android:textSize="15sp"
+        android:textSize="20sp"
         android:visibility="invisible"
         android:layout_below="@id/firstStation"
         android:textColor="#FFFFFF"
@@ -101,24 +140,149 @@
         android:text=" " />
 
     <Button
-        android:id="@+id/thirdStation"
+    android:id="@+id/thirdStation"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:width="330dp"
+    android:visibility="invisible"
+
+    android:layout_marginTop="10dp"
+    android:textSize="20sp"
+    android:layout_below="@id/secondStation"
+    android:textColor="#FFFFFF"
+    android:background="@drawable/btn_rounded"
+    android:height="50dp"
+    android:text=" " />
+
+    <Button
+        android:id="@+id/fourthStation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:width="300dp"
+        android:width="330dp"
         android:visibility="invisible"
-        android:layout_centerHorizontal="true"
+
         android:layout_marginTop="10dp"
-        android:textSize="15sp"
-        android:layout_below="@id/secondStation"
+        android:textSize="20sp"
+        android:layout_below="@id/thirdStation"
         android:textColor="#FFFFFF"
         android:background="@drawable/btn_rounded"
         android:height="50dp"
         android:text=" " />
 
+    <Button
+        android:id="@+id/fifthStation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="330dp"
+        android:visibility="invisible"
+
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:layout_below="@id/fourthStation"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded"
+        android:height="50dp"
+        android:text=" " />
+
+    <Button
+        android:id="@+id/thirdStationDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:layout_marginRight="5dp"
+        android:layout_below="@id/secondStation"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_red"
+        android:height="50dp"
+        android:text="Details" />
+
+    <Button
+        android:id="@+id/fourthStationDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:layout_marginRight="5dp"
+        android:layout_below="@id/thirdStation"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_red"
+        android:height="50dp"
+        android:text="Details" />
+
+    <Button
+        android:id="@+id/closestStationDetails"
+        android:layout_width="165dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/map"
+        android:visibility="invisible"
+        android:textSize="30sp"
+        android:layout_marginRight="5dp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:background="@drawable/btn_rounded_red"
+        android:height="80dp"
+        android:layout_marginTop="10dp"
+        android:text="DETAILS" />
+
+    <Button
+        android:id="@+id/fifthStationDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:layout_marginRight="5dp"
+        android:layout_below="@id/fourthStation"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_red"
+        android:height="50dp"
+        android:text="Details" />
+    <Button
+        android:id="@+id/secondStationDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:textSize="20sp"
+        android:layout_marginRight="5dp"
+        android:layout_below="@id/firstStation"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_red"
+        android:height="50dp"
+        android:text="Details" />
+    <Button
+        android:id="@+id/firstStationDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:visibility="invisible"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="30dp"
+        android:textSize="20sp"
+        android:layout_marginRight="5dp"
+
+        android:layout_below="@+id/stationsNearMe"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/btn_rounded_red"
+        android:height="50dp"
+        android:text="Details" />
+
     <ProgressBar
 
         android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
+        style="?android:attr/progressBarStyleLargeInverse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
@@ -131,14 +295,16 @@
         android:minWidth="300dp"
          />
 
+
+
     <TextView
         android:id="@+id/errorBoi"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/thirdStation"
+
         android:textAlignment="center"
         android:textColor="#f44336"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="90dp"
         android:layout_centerHorizontal="true"
         android:text=" " />
 
