@@ -83,7 +83,6 @@ class StationHandler {
                 thirdChoiceDestinations.add(stations.get(i));
             }
 
-
             String distanceInStraightLine = Double.toString(distance[i]);
             Log.d("distanceInStraightLine", distanceInStraightLine);
         }
@@ -103,7 +102,7 @@ class StationHandler {
                     }
                 }
             }
-        if(firstChoiceDestinations.size() > 3) {
+        if(firstChoiceDestinations.size() >= 3) {
             stringConstructor();
         }
     }
@@ -149,9 +148,8 @@ class StationHandler {
     }
 
     private void stringConstructor() {
-    /*
-        construct the string you need to plug into the maps API
-     */
+        //construct the string you need to plug into the maps API
+
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < firstChoiceDestinations.size(); i++) {
@@ -186,7 +184,6 @@ class StationHandler {
            }
         }
         return addressesReturned.get(storedIndex);
-
     }
 
 
@@ -196,6 +193,7 @@ class StationHandler {
         Station currentStation = getStationByAddress(station);
        // String kms = " ";
         String timeInMinutes = " ";
+        String distance = " ";
         String openOrNot;
         String company = currentStation.getCompany();
 
@@ -210,11 +208,11 @@ class StationHandler {
             if(station.equals(addressesReturned.get(i))){
                 //kms = distanceToStation.get(i);
                 timeInMinutes = timeToStation.get(i);
-
+                distance = distanceToStation.get(i);
             }
         }
 
-        return currentStation.getSuburb() + " " + " | "+ timeInMinutes + " | " + openOrNot;
+        return currentStation.getSuburb() + " " + " | "+ distance + " | " + openOrNot;
     }
 
     public Station getStationByAddress(String station) {

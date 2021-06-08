@@ -11,6 +11,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     StationHandler stationHandler;
     Station station;
     Resources res;
+    DataParser dataParser;
 
     // GETTERS & SETTERS
     public double getUserLocationLatitude() {
@@ -126,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         stationHandler.initialiseStations();
         station = new Station();
         res = getResources();
+        dataParser = new DataParser();
 
         final Drawable red = res.getDrawable(R.drawable.btn_rounded_red);
         final Drawable green = res.getDrawable(R.drawable.btn_rounded_green);
@@ -175,26 +178,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         navigate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 launchMaps(station.getClosestStations().get(0));
-
             }
         });
-
         firstStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 launchMaps(station.getClosestStations().get(0));
             }
         });
-
         secondStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 launchMaps(station.getClosestStations().get(1));
             }
         });
-
         thirdStation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -213,7 +211,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 launchMaps(station.getClosestStations().get(4));
             }
         });
-
         firstStationDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -507,7 +504,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
-    private void showMapUI(){
+    void showMapUI(){
 
         mapFragment.getMapAsync(MainActivity.this);
         mapFragment.getView().setVisibility(View.VISIBLE);
@@ -515,7 +512,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         fcsDetails.setVisibility(View.VISIBLE);
     }
 
-    private void buildDialog(){
+    void buildDialog(){
 
 
         Station s = stationHandler.getStationByAddress(station.getClosestStations().get(0));
@@ -598,7 +595,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private static class HttpHandler extends AsyncTask<Void, Integer, String> {
-
+        DataParser dp = new DataParser();
         private WeakReference<MainActivity> activityWeakReference;
         // only retain a weak reference to the activity
         HttpHandler(MainActivity context) {
@@ -616,92 +613,100 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             MainActivity activity = activityWeakReference.get();
             String locationString = StationHandler.getLocationsToSend();
 
+            String theTest = " ";
             try {
 
                     URL testingParsedDestination = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + activity.getUserLocationLatitude() + "," + activity.getUserLocationLongitude() + "&destinations=" + locationString + "&departure_time=now&key=AIzaSyAdGvjhZOCghKo-Y7Sl-_A4dsT1L9W6QcI");
+                    //URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) testingParsedDestination.openConnection();
+                    InputStream inputStream = httpURLConnection.getInputStream();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    String line = "";
+                    String data = "";
 
-                //URL hardCodedTest = new URL("https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=" + lat + "," + lng + "&destinations=-33.901877,151.037178&departure_time=now&key=AIzaSyAMxY0HN35WCTUM6SGl1ngqsx6zC8t_5Lk");
-
-                HttpURLConnection httpURLConnection = (HttpURLConnection) testingParsedDestination.openConnection();
-                InputStream inputStream = httpURLConnection.getInputStream();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                String line = "";
-                String data = "";
-
-                while (line != null) {
-                    line = bufferedReader.readLine();
-                    data = data + line;
+                    while (line != null) {
+                        line = bufferedReader.readLine();
+                        data = data + line;
                 }
 
                 //Parse the data in a readable manner
 
                 JSONObject JO = new JSONObject(data);
 
-                String checkRequest = JO.getString("status");
-
-                Log.d("checkInvalidLog", "Checking INVALID REQUEST");
-
-                if (checkRequest.equals("INVALID_REQUEST")) {
-                    Log.d("checkInvalidLog1", "INVALID REQUEST");
-                    return "FAIL";
-                }
-
-                JSONArray rowsArray = JO.getJSONArray("rows");
-                JSONArray destAddresses = JO.getJSONArray("destination_addresses");
-                JSONObject row0 = (JSONObject) rowsArray.get(0);
-                JSONArray elements = row0.getJSONArray("elements");
-
-                String test = rowsArray.toString();
-
-                for (int i = 0; i < elements.length(); ++i) {
-
-                    JSONObject objects = elements.getJSONObject(i);
-
-                    activity.stationHandler.timeToArriveInTraffic.add(objects.getJSONObject("duration_in_traffic").getInt("value"));
-                    activity.stationHandler.distanceToStation.add(objects.getJSONObject("distance").getString("text"));
-                    activity.stationHandler.timeToStation.add(objects.getJSONObject("duration_in_traffic").getString("text"));
-                    activity.stationHandler.addressesReturned.add(destAddresses.getString(i));
-
-
-                }
-
-
-                ArrayList<Integer> minutesToDestination = new ArrayList<>(activity.stationHandler.timeToArriveInTraffic);
-
-                for (String d : activity.stationHandler.addressesReturned) {
-                    Log.d("checkDestinationStrings", d);
-                }
-
-                Collections.sort(minutesToDestination);
-
-                for(int i= 0; i < minutesToDestination.size(); i++) {
-                     activity.station.setClosestStationAddress((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(i)))));
-                     activity.stationHandler.setClosestStations((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(i)))));
-                }
-
-
+                theTest = dp.parseAPIdata(JO, activity.context);
+//
+//                String checkRequest = JO.getString("status");
+//
+//                Log.d("checkInvalidLog", "Checking INVALID REQUEST");
+//
+//                if (checkRequest.equals("INVALID_REQUEST")) {
+//                    Log.d("checkInvalidLog1", "INVALID REQUEST");
+//                    return "FAIL";
+//                }
+//
+//                JSONArray rowsArray = JO.getJSONArray("rows");
+//                JSONArray destAddresses = JO.getJSONArray("destination_addresses");
+//                JSONObject row0 = (JSONObject) rowsArray.get(0);
+//                JSONArray elements = row0.getJSONArray("elements");
+//
+//                String test = rowsArray.toString();
+//
+//                for (int i = 0; i < elements.length(); ++i) {
+//
+//                    JSONObject objects = elements.getJSONObject(i);
+//
+//                    activity.stationHandler.timeToArriveInTraffic.add(objects.getJSONObject("duration_in_traffic").getInt("value"));
+//                    activity.stationHandler.distanceToStation.add(objects.getJSONObject("distance").getString("text"));
+//                    activity.stationHandler.timeToStation.add(objects.getJSONObject("duration_in_traffic").getString("text"));
+//                    activity.stationHandler.addressesReturned.add(destAddresses.getString(i));
+//
+//
+//                }
+//
+//
+//                ArrayList<Integer> minutesToDestination = new ArrayList<>(activity.stationHandler.timeToArriveInTraffic);
+//
+//                for (String d : activity.stationHandler.addressesReturned) {
+//                    Log.d("checkDestinationStrings", d);
+//                }
+//
+//                Collections.sort(minutesToDestination);
+//
+//                for(int i= 0; i < minutesToDestination.size(); i++) {
+//                     activity.station.setClosestStationAddress((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(i)))));
+//                     activity.stationHandler.setClosestStations((destAddresses.getString(activity.stationHandler.timeToArriveInTraffic.indexOf(minutesToDestination.get(i)))));
+//                }
+//
+//
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }catch (Exception e) {
-                e.printStackTrace();
             }
+            catch (JSONException e) {
+                e.printStackTrace();
+           }
+            //catch (Exception e) {
+////                e.printStackTrace();
+////            }
 
 
           //  return activity.station.getClosestStations().get(0);
-            return activity.stationHandler.getClosestStations().get(0).getFullAddress();
-            
+          //  return activity.stationHandler.getClosestStations().get(0).getFullAddress();
+            return theTest;
         }
 
 
         @Override
-        protected void onPostExecute(String output) {
+        protected void onPostExecute(@NonNull String output) {
 
             MainActivity activity = activityWeakReference.get();
             activity.progressBar.setVisibility(View.GONE);
             Drawable red = activity.res.getDrawable(R.drawable.btn_rounded_red);
             Drawable green = activity.res.getDrawable(R.drawable.btn_rounded_green);
+
+
+            activity.stationHandler = dp.stationHandler;
+
+           // dp.displayResults(output,activity.context);
 
             if ((!output.equals("FAIL")) && stopMapsLaunching) { // user wants to see the 3 closest stations
                 super.onPostExecute(output);
