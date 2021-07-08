@@ -31,19 +31,20 @@
         <TextView
             android:id="@+id/Error"
             android:layout_width="match_parent"
-            android:layout_marginTop="0dp"
-            android:layout_marginLeft="250dp"
+            android:layout_marginTop="70dp"
+            android:layout_marginLeft="5dp"
             android:layout_height="match_parent"
             android:textColor="@color/colorPrimary"
-            android:textSize="50dp"
+            android:textSize="12dp"
             android:textStyle="bold"
-            android:text="Boo" />
+            android:text="Error" />
 
     <TextView
         android:id="@+id/state"
         android:layout_width="match_parent"
-        android:layout_below="@id/fetchedData"
-        android:padding="5dp"
+        android:layout_marginTop="0dp"
+        android:padding="0dp"
+        android:layout_marginLeft="250dp"
         android:layout_height="match_parent"
         android:textColor="@color/colorAccent"
         android:textSize="20dp"

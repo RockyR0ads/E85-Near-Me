@@ -17,7 +17,7 @@ import java.util.Collections;
 public class DataParser {
 
     StationHandler stationHandler = new StationHandler();
-    MainActivity mainActivity;
+
 
     Station station = new Station();
     String locationString = StationHandler.getLocationsToSend();
@@ -76,33 +76,32 @@ public class DataParser {
         return stationHandler.getClosestStations().get(0).getFullAddress();
     }
 
-    public void displayResults(String output,Context context){
+    public void displayResults(String output,boolean stopLaunch){
 
+        if ((!output.equals("FAIL")) && stopLaunch) { // user wants to see the 3 closest stations
 
-        boolean stopMapsLaunching = true;
-        if ((!output.equals("FAIL")) && stopMapsLaunching) { // user wants to see the 3 closest stations
-
-
+            MainActivity.getInstance().prepareSNMUI();
 
         } else if(!output.equals("FAIL")) {
             if (stationHandler.getStationByAddress(stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()) { // station is open send the user to maps
                 // activity.launchMaps(activity.station.getClosestStations().get(0));
-                mainActivity.closestStation = new LatLng(stationHandler.getClosestStations().get(0).getLatitude(),stationHandler.getClosestStations().get(0).getLongitude());
+                MainActivity.getInstance().closestStation = new LatLng(stationHandler.getClosestStations().get(0).getLatitude(),stationHandler.getClosestStations().get(0).getLongitude());
                 //  activity.finish();
-                mainActivity.showMapUI();
+                MainActivity.getInstance().showMapUI();
 
 
-            } else { // station is closed
-                mainActivity.buildDialog();
-                mainActivity.errorCheck.setText("Station is not open Go EAT ASS");
-                mainActivity.stateWatch.setText("state:" + mainActivity.getLifecycle().getCurrentState().toString());
+            } else {
+
+                // station is closed
+                MainActivity.getInstance().buildDialog();
+                MainActivity.getInstance().errorCheck.setText("Station is not open Go EAT ASS");
+                MainActivity.getInstance().stateWatch.setText("state:" + MainActivity.getInstance().getLifecycle().getCurrentState().toString());
 
             }
 
         }
         else{
-
-            mainActivity.buildFailureDialog();
-        }
+                MainActivity.getInstance().buildFailureDialog();
+            }
     }
 }

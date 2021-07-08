@@ -74,13 +74,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     SupportMapFragment mapFragment;
     LatLng closestStation;
     private static Boolean stopMapsLaunching = false;
-
+    private static MainActivity instance;
 
     final static double homeLat = -33.926360;
     final static double homeLng = 151.121270;
 
-    StationHandler stationHandler;
-    Station station;
+    StationHandler stationHandler,getStationHandler;
+    Station station,getStation;
     Resources res;
     DataParser dataParser;
 
@@ -127,8 +127,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         stationHandler = new StationHandler();
         stationHandler.initialiseStations();
         station = new Station();
+
         res = getResources();
         dataParser = new DataParser();
+        instance = this;
 
         final Drawable red = res.getDrawable(R.drawable.btn_rounded_red);
         final Drawable green = res.getDrawable(R.drawable.btn_rounded_green);
@@ -175,72 +177,78 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        navigate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchMaps(station.getClosestStations().get(0));
-            }
-        });
-        firstStation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchMaps(station.getClosestStations().get(0));
-            }
-        });
-        secondStation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchMaps(station.getClosestStations().get(1));
-            }
-        });
-        thirdStation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchMaps(station.getClosestStations().get(2));
-            }
-        });
-        fourthStation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchMaps(station.getClosestStations().get(3));
-            }
-        });
-        fifthStation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchMaps(station.getClosestStations().get(4));
-            }
-        });
-        firstStationDetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               buildDetailsDialog(stationHandler.getClosestStations().get(0));
-            }
-        });
-        secondStationDetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                buildDetailsDialog(stationHandler.getClosestStations().get(1));
-            }
-        });
-        thirdStationDetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                buildDetailsDialog(stationHandler.getClosestStations().get(2));
-            }
-        });
-        fourthStationDetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                buildDetailsDialog(stationHandler.getClosestStations().get(3));
-            }
-        });
-        fifthStationDetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                buildDetailsDialog(stationHandler.getClosestStations().get(4));
-            }
-        });
+
+        try {
+            navigate.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    launchMaps(getStation.getClosestStations().get(0));
+                }
+            });
+            firstStation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    launchMaps(getStation.getClosestStations().get(0));
+                }
+            });
+            secondStation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    launchMaps(getStation.getClosestStations().get(1));
+                }
+            });
+            thirdStation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    launchMaps(getStation.getClosestStations().get(2));
+                }
+            });
+            fourthStation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    launchMaps(getStation.getClosestStations().get(3));
+                }
+            });
+            fifthStation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    launchMaps(getStation.getClosestStations().get(4));
+                }
+            });
+            firstStationDetails.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   buildDetailsDialog(getStationHandler.getClosestStations().get(0));
+                }
+            });
+            secondStationDetails.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    buildDetailsDialog(getStationHandler.getClosestStations().get(1));
+                }
+            });
+            thirdStationDetails.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    buildDetailsDialog(getStationHandler.getClosestStations().get(2));
+                }
+            });
+            fourthStationDetails.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    buildDetailsDialog(getStationHandler.getClosestStations().get(3));
+                }
+            });
+            fifthStationDetails.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    buildDetailsDialog(getStationHandler.getClosestStations().get(4));
+                }
+            });
+        } catch (Exception e) {
+            error.setText("Failed to launch maps: " + e);
+            e.printStackTrace();
+        }
 
         moreStations.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -276,6 +284,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+
+
+    }
+
+    public static MainActivity getInstance() {
+        return instance;
     }
 
     private void hideSNM(){
@@ -296,37 +310,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void prepareSNMUI(){
+    public void prepareSNMUI(){
         final Drawable red = res.getDrawable(R.drawable.btn_rounded_red);
         final Drawable green = res.getDrawable(R.drawable.btn_rounded_green);
 
-        // modify the activity's UI
-        if(stationHandler.getStationByAddress(stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()){
-            firstStation.setBackground(green);
-        }else{firstStation.setBackground(red);}
 
-        if(stationHandler.getStationByAddress(stationHandler.getClosestStations().get(1).getFullAddress()).isTheStationOpen()){
-            secondStation.setBackground(green);
-        }else{secondStation.setBackground(red);}
+        try {
+            // modify the activity's UI
+            if(getStationHandler.getStationByAddress(getStationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()){
+                firstStation.setBackground(green);
+            }else{firstStation.setBackground(red);}
 
-        if(stationHandler.getStationByAddress(stationHandler.getClosestStations().get(2).getFullAddress()).isTheStationOpen()){
-            thirdStation.setBackground(green);
-        }else{thirdStation.setBackground(red);}
+            if(getStationHandler.getStationByAddress(getStationHandler.getClosestStations().get(1).getFullAddress()).isTheStationOpen()){
+                secondStation.setBackground(green);
+            }else{secondStation.setBackground(red);}
 
-        firstStation.setVisibility(View.VISIBLE);
-        firstStationDetails.setVisibility(View.VISIBLE);
-        firstStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(0).getFullAddress()));
+            if(getStationHandler.getStationByAddress(getStationHandler.getClosestStations().get(2).getFullAddress()).isTheStationOpen()){
+                thirdStation.setBackground(green);
+            }else{thirdStation.setBackground(red);}
 
-        secondStation.setVisibility(View.VISIBLE);
-        secondStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(1).getFullAddress()));
-        secondStationDetails.setVisibility(View.VISIBLE);
+            firstStation.setVisibility(View.VISIBLE);
+            firstStationDetails.setVisibility(View.VISIBLE);
+            firstStation.setText(getStationHandler.snmStringConstruct(getStationHandler.getClosestStations().get(0).getFullAddress()));
 
-        thirdStation.setVisibility(View.VISIBLE);
-        thirdStation.setText(stationHandler.snmStringConstruct(stationHandler.getClosestStations().get(2).getFullAddress()));
-        thirdStationDetails.setVisibility(View.VISIBLE);
+            secondStation.setVisibility(View.VISIBLE);
+            secondStation.setText(getStationHandler.snmStringConstruct(getStationHandler.getClosestStations().get(1).getFullAddress()));
+            secondStationDetails.setVisibility(View.VISIBLE);
 
-        if(stationHandler.getClosestStations().size() > 4){
-            moreStations.setVisibility(View.VISIBLE);
+            thirdStation.setVisibility(View.VISIBLE);
+            thirdStation.setText(getStationHandler.snmStringConstruct(getStationHandler.getClosestStations().get(2).getFullAddress()));
+            thirdStationDetails.setVisibility(View.VISIBLE);
+
+            if(getStationHandler.getClosestStations().size() > 4){
+                moreStations.setVisibility(View.VISIBLE);
+            }
+        } catch (Exception e) {
+            error.setText("UNABLE TO PREPARE UI: " + e);
+            e.printStackTrace();
         }
 
         stateWatch.setText("state:" + getLifecycle().getCurrentState().toString());
@@ -457,10 +477,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
-        for(int i = 0; i < stationHandler.addressesReturned.size(); i ++){
-            if(s.getFullAddress().equals(stationHandler.addressesReturned.get(i))){
-              kms = stationHandler.distanceToStation.get(i);
-               timeInMinutes = stationHandler.timeToStation.get(i);
+        for(int i = 0; i < getStationHandler.addressesReturned.size(); i ++){
+            if(s.getFullAddress().equals(getStationHandler.addressesReturned.get(i))){
+              kms = getStationHandler.distanceToStation.get(i);
+               timeInMinutes = getStationHandler.timeToStation.get(i);
             }
         }
 
@@ -515,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     void buildDialog(){
 
 
-        Station s = stationHandler.getStationByAddress(station.getClosestStations().get(0));
+        Station s = getStationHandler.getStationByAddress(station.getClosestStations().get(0));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
        // builder.setTitle(s.getCompany() + " " + s.getSuburb() + " is CLOSED");
@@ -527,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
-                        String openStation = stationHandler.findOpenStation();
+                        String openStation = getStationHandler.findOpenStation();
                         launchMaps(openStation);
 
                     }
@@ -703,35 +723,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Drawable red = activity.res.getDrawable(R.drawable.btn_rounded_red);
             Drawable green = activity.res.getDrawable(R.drawable.btn_rounded_green);
 
+            activity.getStationHandler = dp.stationHandler;
+            activity.getStation = dp.station;
 
-            activity.stationHandler = dp.stationHandler;
-
-           // dp.displayResults(output,activity.context);
-
-            if ((!output.equals("FAIL")) && stopMapsLaunching) { // user wants to see the 3 closest stations
-                super.onPostExecute(output);
-                activity.prepareSNMUI();
-
-            } else if(!output.equals("FAIL")) {
-                    if (activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()) { // station is open send the user to maps
-                       // activity.launchMaps(activity.station.getClosestStations().get(0));
-                        activity.closestStation = new LatLng(activity.stationHandler.getClosestStations().get(0).getLatitude(),activity.stationHandler.getClosestStations().get(0).getLongitude());
-                      //  activity.finish();
-                        activity.showMapUI();
+            dp.displayResults(output, stopMapsLaunching);
 
 
-                    } else { // station is closed
-                            activity.buildDialog();
-                            activity.errorCheck.setText("Station is not open Go EAT ASS");
-                            activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
 
-                    }
 
-            }
-            else{
-
-                activity.buildFailureDialog();
-            }
+//            if ((!output.equals("FAIL")) && stopMapsLaunching) { // user wants to see the 3 closest stations
+//                super.onPostExecute(output);
+//                activity.prepareSNMUI();
+//
+//            } else if(!output.equals("FAIL")) {
+//                    if (activity.stationHandler.getStationByAddress(activity.stationHandler.getClosestStations().get(0).getFullAddress()).isTheStationOpen()) { // station is open send the user to maps
+//                       // activity.launchMaps(activity.station.getClosestStations().get(0));
+//                        activity.closestStation = new LatLng(activity.stationHandler.getClosestStations().get(0).getLatitude(),activity.stationHandler.getClosestStations().get(0).getLongitude());
+//                      //  activity.finish();
+//                        activity.showMapUI();
+//
+//
+//                    } else { // station is closed
+//                            activity.buildDialog();
+//                            activity.errorCheck.setText("Station is not open Go EAT ASS");
+//                            activity.stateWatch.setText("state:" + activity.getLifecycle().getCurrentState().toString());
+//
+//                    }
+//
+//            }
+//            else{
+//
+//                activity.buildFailureDialog();
+//            }
         }
     }
 }
